@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+
+<document>
+
+ <properties>
+  <title>Overview</title>
+  <author email="commons-dev@jakarta.apache.org">Commons Documentation Team</author>
+ </properties>
+
+ <body>
+
+<section name="The Pipeline Component">
+
+<p>
+  This component provides a set of pipeline utilities designed around 
+  work queues that run in parallel to sequentially process data objects 
+  data objects.
+</p>
+<br/>
+<br/>
+<br/>
+</section>
+
+<section name="Releases">
+    <p>
+       See the <a href="downloads.html">downloads</a> page for information on obtaining releases.
+    </p>
+<br/>
+<br/>
+<br/>
+</section>
+
+<section name="Documentation">
+  <p>
+     The <a href="apidocs/index.html">JavaDoc API documents</a> are available online.
+  </p>
+</section>
+
+</body>
+</document>
