@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <project>
-  <extend>../sandbox-build/project.xml</extend>
+  <extend>../commons-build/sandbox-project.xml</extend>
   <pomVersion>3</pomVersion>
   <name>Commons Pipeline</name>
   <id>commons-pipeline</id>
