@@ -26,7 +26,7 @@ import java.util.Queue;
  * A do-nothing implementation of Stage with Log4j logging. Useful for debugging purposes.
  *
  * @author Kris Nuttycombe, National Geophysical Data Center
- * @version $Revision: 1.2 $
+ * @version $Revision$
  */
 public class LogStage extends BaseStage {
     private Logger log = Logger.getLogger(this.getClass());

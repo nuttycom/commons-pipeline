@@ -35,7 +35,7 @@ import org.apache.commons.collections.map.ListOrderedMap;
  * a simple framework for asynchronous event-based communication between stages.
  *
  * @author Kris Nuttycombe, National Geophysical Data Center
- * @version $Revision: 1.2 $
+ * @version $Revision$
  */
 public final class Pipeline implements Iterable<Stage>, Runnable {
     private List<StageEventListener> listeners = new ArrayList<StageEventListener>();

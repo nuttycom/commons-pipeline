@@ -23,7 +23,7 @@ import java.util.EventObject;
  * Listener interface for {@link StageEvent}s
  *
  * @author Kris Nuttycombe, National Geophysical Data Center
- * @version $Revision: 1.2 $
+ * @version $Revision$
  */
 public interface StageEventListener extends EventListener {
     

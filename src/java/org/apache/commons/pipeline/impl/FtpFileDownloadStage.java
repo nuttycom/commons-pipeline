@@ -34,7 +34,7 @@ import org.apache.log4j.Logger;
  * are not yet supported.
  *
  * @author Kris Nuttycombe, National Geophysical Data Center
- * @version $Revision: 1.2 $
+ * @version $Revision$
  */
 public class FtpFileDownloadStage extends BaseStage {
     private static Logger log = Logger.getLogger(FtpFileDownloadStage.class);

@@ -29,7 +29,7 @@ import java.util.*;
  * may not be used to manipulate more than a single stage.
  *
  * @author Kris Nuttycombe, National Geophysical Data Center
- * @version $Revision: 1.1 $
+ * @version $Revision$
  */
 public class SingleThreadStageDriver implements StageDriver {
     private Logger log = Logger.getLogger(this.getClass());

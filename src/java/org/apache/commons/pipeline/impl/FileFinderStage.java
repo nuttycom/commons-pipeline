@@ -30,7 +30,7 @@ import org.apache.log4j.Logger;
  * resulting File objects placed on the subsequent stage's queue.
  *
  * @author Kris Nuttycombe, National Geophysical Data Center
- * @version $Revision: 1.2 $
+ * @version $Revision$
  */
 public class FileFinderStage extends BaseStage {
     private static final Logger log = Logger.getLogger(FileFinderStage.class);

@@ -33,7 +33,7 @@ import org.apache.commons.pipeline.Pipeline;
  * This factory is designed to simplify creating a pipeline using Digester.
  *
  * @author Kris Nuttycombe, National Geophysical Data Center
- * @version $Revision: 1.1 $
+ * @version $Revision$
  */
 public class DigesterPipelineFactory implements org.apache.commons.pipeline.PipelineFactory {
     

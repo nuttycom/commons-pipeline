@@ -61,7 +61,7 @@ import org.xml.sax.Attributes;
  * </ul>
  *
  * @author Kris Nuttycombe, National Geophysical Data Center
- * @version $Revision: 1.2 $
+ * @version $Revision$
  * @todo Add support for more complicated StageQueue construction and configuration as part of the Stage 
  * tag processing.
  */

@@ -22,7 +22,7 @@ package org.apache.commons.pipeline;
  * Exception wrapper class for exceptions that occur while processing a stage.
  *  
  * @author Kris Nuttycombe, National Geophysical Data Center
- * @version $Revision: 1.1 $
+ * @version $Revision$
  */
 public class StageException extends java.lang.RuntimeException {
     

@@ -33,7 +33,7 @@ import org.apache.log4j.Logger;
  * needed to retrieve data from an HTTP URL. Multipart responses are not yet supported.
  *
  * @author Kris Nuttycombe, National Geophysical Data Center
- * @version $Revision: 1.2 $
+ * @version $Revision$
  */
 public class HttpFileDownloadStage extends BaseStage {
     private static final int BUFFER_SIZE = 10000;
