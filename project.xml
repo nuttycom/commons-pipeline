@@ -1,13 +1,11 @@
 <?xml version="1.0"?>
 <project>
+  <extend>../sandbox-build/project.xml</extend>
   <pomVersion>3</pomVersion>
-  <name>commons-pipeline</name>
+  <name>Commons Pipeline</name>
   <id>commons-pipeline</id>
+  <logo>/images/pipeline-logo-white.png</logo>
   <currentVersion>0.0.1</currentVersion>
-  <organization>
-    <name>The Apache Software Foundation</name>
-    <url>http://www.apache.org/</url>
-  </organization>
   <inceptionYear>2004</inceptionYear>
   <package>org.apache.commons.pipeline</package>
 
