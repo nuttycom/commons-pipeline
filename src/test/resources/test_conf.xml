@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+    Document   : acars_conf.xml
+    Created on : February 12, 2004, 4:08 PM
+    Author     : kjn
+    Description:
+        Configuration file for acars data import
+-->
+
+<pipeline>
+    <stageDriverFactory/> <!-- uses default stage drivers -->
+
+    <stage className="org.apache.commons.pipeline.impl.FileFinderStage" filePattern=".*\.java">
+        <stageDriver className="org.apache.commons.pipeline.impl.SingleThreadStageDriver"/>
+        <enqueue><value>src/java</value></enqueue>
+    </stage>
+
+    <stage className="org.apache.commons.pipeline.impl.LogStage">
+        <stageDriver className="org.apache.commons.pipeline.impl.SingleThreadStageDriver"/>
+    </stage>
+                   
+</pipeline>
