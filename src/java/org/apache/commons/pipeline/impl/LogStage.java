@@ -17,24 +17,30 @@
 package org.apache.commons.pipeline.impl;
 
 import org.apache.commons.pipeline.StageException;
-import org.apache.commons.pipeline.StageQueue;
-import org.apache.commons.pipeline.Pipeline.Stage;
+import org.apache.commons.pipeline.BaseStage;
 import org.apache.log4j.Logger;
+import java.util.Queue;
 
 
 /**
  * A do-nothing implementation of Stage with Log4j logging. Useful for debugging purposes.
  *
  * @author Kris Nuttycombe, National Geophysical Data Center
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
-public class LogStage extends Stage {
+public class LogStage extends BaseStage {
     private Logger log = Logger.getLogger(this.getClass());
+    
+    /**
+     * Creates a new LogStage.
+     */
+    public LogStage() {
+    }
     
     /**
      * Creates a new LogStage with the specified {@link StageQueue}.
      */
-    public LogStage(StageQueue queue) {
+    public LogStage(Queue<Object> queue) {
         super(queue);
     }
     

@@ -17,17 +17,18 @@
 package org.apache.commons.pipeline;
 
 import java.util.EventListener;
+import java.util.EventObject;
 
 /**
  * Listener interface for {@link StageEvent}s
  *
  * @author Kris Nuttycombe, National Geophysical Data Center
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public interface StageEventListener extends EventListener {
     
     /**
      * Notify this listener of a {@link StageEvent}
      */
-    public abstract void notify(StageEvent ev);
+    public abstract void notify(EventObject ev);
 }

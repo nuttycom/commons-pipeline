@@ -21,13 +21,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.regex.Pattern;
+import java.util.Queue;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPReply;
+import org.apache.commons.pipeline.BaseStage;
 import org.apache.commons.pipeline.StageException;
-import org.apache.commons.pipeline.StageQueue;
-import org.apache.commons.pipeline.Pipeline.Stage;
 import org.apache.log4j.Logger;
-
 
 /**
  * This {@link org.apache.commons.pipeline.Pipeline$Stage Stage} provides the 
@@ -35,12 +34,12 @@ import org.apache.log4j.Logger;
  * are not yet supported.
  *
  * @author Kris Nuttycombe, National Geophysical Data Center
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
-public class FtpFileDownloadStage extends Stage {
+public class FtpFileDownloadStage extends BaseStage {
     private static Logger log = Logger.getLogger(FtpFileDownloadStage.class);
     
-    private String workDir;
+    private String workDir = "/tmp";
     private File fworkDir;
     private FTPClient client = new FTPClient();
     
@@ -57,16 +56,28 @@ public class FtpFileDownloadStage extends Stage {
     /**
      * Default constructor - creates work directory in /tmp
      */
-    public FtpFileDownloadStage(StageQueue queue) {
+    public FtpFileDownloadStage() {
+    }
+   
+    /**
+     * Constructor specifying work directory.
+     */
+    public FtpFileDownloadStage(String workDir) {
+        this.workDir = workDir;
+    }
+   
+    /**
+     * Default constructor - creates work directory in /tmp
+     */
+    public FtpFileDownloadStage(Queue<Object>  queue) {
         super(queue);
-        this.workDir = "/tmp";
     }
     
     /**
      * Creates a new instance of HttpFileDownload with the specified work directory
      * into which to download files.
      */
-    public FtpFileDownloadStage(StageQueue queue, String workDir) {
+    public FtpFileDownloadStage(Queue<Object> queue, String workDir) {
         super(queue);
         this.workDir = workDir;
     }

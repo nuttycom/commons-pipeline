@@ -4,19 +4,24 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
- * limitations under the License. 
+ * limitations under the License.
  */
 
 package org.apache.commons.pipeline;
 
+import java.lang.Iterable;
 import java.util.*;
+import org.apache.commons.collections.OrderedMap;
+import org.apache.commons.collections.OrderedMapIterator;
+import org.apache.commons.collections.map.ListOrderedMap;
+
 
 
 /**
@@ -30,66 +35,139 @@ import java.util.*;
  * a simple framework for asynchronous event-based communication between stages.
  *
  * @author Kris Nuttycombe, National Geophysical Data Center
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
-public final class Pipeline {
-    private List stages = new LinkedList();
-    private List listeners = new ArrayList();
-    private Map branches = new HashMap();
+public final class Pipeline implements Iterable<Stage>, Runnable {
+    private List<StageEventListener> listeners = new ArrayList<StageEventListener>();
+
+    /**
+     * Ordered map of stages in the pipeline where the keys are stages and the
+     * values are the associated StageDrivers.
+     */
+    protected OrderedMap stages = new ListOrderedMap();
+    //private OrderedMap<Stage,StageDriver> stages = new ListOrderedMap<Stage,StageDriver>();
+    
+    /**
+     * Map of pipeline branches where the keys are branch names.
+     */
+    protected Map<String,Pipeline> branches = new HashMap<String,Pipeline>();
     
     
-    /** Creates a new Pipeline */
+    /**
+     * Creates a new Pipeline
+     */
     public Pipeline() {  }
     
     
     /**
-     * Adds a Stage object to the end of this Pipeline.
+     * Adds a Stage object to the end of this Pipeline. The pipeline will use
+     * the specified StageDriver to run the stage.
+     *
+     * It is critical that all stages added to a pipeline have distinct hash codes
+     * to maintain stage ordering integrity. For this reason, it is
+     * strongly suggested that Stage implementations <i>do not</i> override
+     * the default {@link java.lang.Object#hashCode() hashCode()} implementation
+     * in java.lang.Object.
      *
      * @todo throw IllegalStateException if the stage is being used in a different pipeline
      */
-    public final void addStage(Stage stage) {
-        if (!stages.isEmpty()) ((Stage) stages.get(stages.size() - 1)).next = stage;
-        stage.pipeline = this;
-        stages.add(stage);
+    public void addStage(Stage stage, StageDriver driver) {
+        if (stage == null) throw new IllegalArgumentException("Argument \"stage\" for call to Pipeline.addStage() may not be null.");
+        if (driver == null) throw new IllegalArgumentException("Argument \"driver\" for call to Pipeline.addStage() may not be null.");
+        
+        stage.setPipeline(this);        
+        this.stages.put(stage, driver);
     }
     
     
     /**
+     * Returns the first stage in the pipeline
+     */
+    public Stage head() {
+        return (Stage) stages.firstKey();
+    }
+    
+    /**
+     * Returns the stage after the specified stage in the pipeline
+     */
+    public Stage getNextStage(Stage stage) {
+        return (Stage) stages.nextKey(stage);
+    }
+    
+    /**
+     * Returns an Iterator for stages in the pipeline.
+     */
+    public Iterator<Stage> iterator() {
+        return (Iterator<Stage>) stages.mapIterator();
+    }
+    
+    /**
      * Adds a branch to the pipeline.
      */
-    public final void addBranch(String key, Pipeline pipeline) {
+    public void addBranch(String key, Pipeline pipeline) {
         if (key == null) throw new IllegalArgumentException("Branch key may not be null.");
         if (pipeline == null) throw new IllegalArgumentException("Illegal attempt to set reference to null branch.");
-        if (pipeline == this) throw new IllegalArgumentException("Illegal attempt to set reference to self as a branch (infinite recursion potential)");
+        if (pipeline == this || this.hasBranch(pipeline))
+            throw new IllegalArgumentException("Illegal attempt to set reference to self as a branch (infinite recursion potential)");
         
         this.branches.put(key, pipeline);
     }
     
     
     /**
-     * Calls {@link StageQueue#start() start()} on
-     * the {@link StageQueue} of each stage in the pipeline in the order they were added.
+     * Runs the pipeline from start to finish.
      */
-    public final void start() {
-        if (!stages.isEmpty()) ((Stage) stages.get(0)).startAll();
-        for (Iterator iter = branches.values().iterator(); iter.hasNext();) ((Pipeline) iter.next()).start();
+    public void run() {
+        try {
+            start();
+            finish();
+        }
+        catch (InterruptedException e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
     }
     
     
     /**
-     * Calls {@link StageQueue#finish() finish()} 
-     * on the {@link StageQueue} of each stage in the order they were added to the pipeline. 
-     * The {@link StageQueue#finish() finish()}
-     * method blocks until the stage's queue is exhausted, so this method
+     * This method iterates over the stages in the pipeline, looking up a {@link StageDriver}
+     * for each stage and using that driver to start the stage. Startups
+     * may occur sequentially or in parallel, depending upon the stage driver
+     * used.
+     */
+    public void start() {
+        for (OrderedMapIterator iter = stages.orderedMapIterator(); iter.hasNext();) {
+            Stage stage = (Stage) iter.next();
+            StageDriver driver = (StageDriver) iter.getValue();
+            driver.start(stage);
+        }
+        
+        for (Pipeline branch : branches.values()) {
+            branch.start();
+        }
+    }
+    
+    
+    /**
+     * This method iterates over the stages in the pipeline, looking up a {@link StageDriver}
+     * for each stage and using that driver to request that the stage finish
+     * execution. The {@link StageDriver#finish(Stage)}
+     * method will block until the stage's queue is exhausted, so this method
      * may be used to safely finalize all stages without the risk of
      * losing data in the queues.
      *
      * @throws InterruptedException if a worker thread was interrupted at the time
      * a stage was asked to finish execution.
      */
-    public final void finish() throws InterruptedException {
-        if (!stages.isEmpty()) ((Stage) stages.get(0)).finishAll();
-        for (Iterator iter = branches.values().iterator(); iter.hasNext();) ((Pipeline) iter.next()).finish();
+    public void finish() throws InterruptedException {
+        for (OrderedMapIterator iter = stages.orderedMapIterator(); iter.hasNext();) {
+            Stage stage = (Stage) iter.next();
+            StageDriver driver = (StageDriver) iter.getValue();
+            driver.finish(stage);
+        }
+        
+        for (Pipeline pipeline : branches.values()) {
+            pipeline.finish();
+        }
     }
     
     
@@ -97,8 +175,31 @@ public final class Pipeline {
      * Enqueues an object on the first stage if the pipeline is not empty
      * @param o the object to enque
      */
-    public final void enqueue(Object o){
-        if (!stages.isEmpty()) ((Stage) stages.get(0)).enqueue(o);
+    public void enqueue(Object o){
+        if (!stages.isEmpty()) ((Stage) stages.firstKey()).enqueue(o);
+    }
+    
+    
+    /**
+     * This method is used by stages to pass data from one stage to the next.
+     */
+    public void pass(Stage source, Object data) {
+        Stage next = (Stage) this.stages.nextKey(source);
+        if (next != null) next.enqueue(data);
+    }
+    
+    
+    /**
+     * Simple method that recursively checks whether the specified
+     * pipeline is a branch of this pipeline.
+     */
+    private boolean hasBranch(Pipeline pipeline) {
+        if (branches.containsValue(pipeline)) return true;
+        for (Pipeline branch : branches.values()) {
+            if (branch.hasBranch(pipeline)) return true;
+        }
+        
+        return false;
     }
     
     
@@ -106,7 +207,7 @@ public final class Pipeline {
      * Adds an EventListener to the pipline that will be notified by calls
      * to {@link Stage#raise(StageEvent)}.
      */
-    public final void addEventListener(StageEventListener listener) {
+    public void addEventListener(StageEventListener listener) {
         listeners.add(listener);
     }
     
@@ -115,7 +216,7 @@ public final class Pipeline {
      * Sequentially notifies each listener in the list of an event, and propagates
      * the event to any attached branches
      */
-    private void notifyListeners(final StageEvent ev) {
+    public void notifyListeners(final java.util.EventObject ev) {
         new Thread() {
             public void run() {
                 for (Iterator iter = listeners.iterator(); iter.hasNext();) {
@@ -127,106 +228,5 @@ public final class Pipeline {
                 }
             }
         }.start();
-    }
-    
-        
-    /**
-     * This abstract base class provides a foundation for processing stages in 
-     * the pipeline.
-     *
-     * @todo This should probably be a non-static inner class so that
-     * we can avoid the absolute reference to the enclosing Pipeline if somebody
-     * can figure out how to properly handle the constructor using Digester.
-     */
-    public static abstract class Stage implements StageHandler {
-        private StageQueue queue;
-        private Pipeline pipeline;
-        private Stage next;
-        
-        
-        /** Builds a new stage that wraps the specified StageQueue */
-        public Stage(StageQueue queue) {
-            queue.setStageHandler(this);
-            this.queue = queue;
-        }
-        
-        
-        /**
-         * This method recursively starts each element in the process chain in sequence.
-         */
-        private final void startAll() throws IllegalThreadStateException {
-            System.out.println("Starting " + this.getClass().getName());
-            queue.start();
-            if (next != null) next.startAll();
-        }
-        
-        
-        /**
-         * Calls the finish() method on the wrapped worker queue (which waits for the
-         * worker thread(s) to die) then calls the next chain element's finishAll() method.
-         * This method attempts to finish all threads even if exceptions are thrown.
-         */
-        private final void finishAll() throws InterruptedException {
-            try {
-                queue.finish();
-            }
-            finally {
-                if (next != null) next.finishAll();
-            }
-        }
-        
-        
-        /**
-         * Delegate method of the wrapped {@link StageQueue}.
-         */
-        public void enqueue(Object obj) {
-            queue.enqueue(obj);
-        }
-        
-        
-        /**
-         * Enqueues the specified object onto the next stage in the pipeline
-         * if such a stage exists.
-         */
-        public void exqueue(Object obj) {
-            if (this.next != null) this.next.enqueue(obj);
-        }
-        
-        
-        /**
-         * Enqueues the specified object onto the first stage in the pipeline 
-         * branch corresponding to the specified key, if such a brach exists.
-         */
-        public void exqueue(String key, Object obj) {
-            Pipeline branch = (Pipeline) this.pipeline.branches.get(key);
-            if (branch != null && !branch.stages.isEmpty()) {
-                ((Stage) branch.stages.get(0)).enqueue(obj);
-            }
-        }
-        
-        
-        /**
-         * Raises an event on the pipeline. Any listeners registered with the pipeline
-         * will be notified.
-         */
-        public final void raise(StageEvent ev) {
-            this.pipeline.notifyListeners(ev);
-        }
-        
-        /** Do nothing default implementation */
-        public void process(Object obj) {
-        }
-        
-        /** Do nothing default implementation */
-        public void release() {
-        }
-        
-        /** Do nothing default implementation */
-        public void postprocess() {
-        }
-        
-        /** Do nothing default implementation */
-        public void preprocess() {
-        }        
     }
 }

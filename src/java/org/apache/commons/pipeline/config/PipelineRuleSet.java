@@ -18,13 +18,9 @@
 
 package org.apache.commons.pipeline.config;
 
-import java.lang.reflect.Constructor;
-import java.util.Iterator;
 import java.util.List;
 import org.apache.commons.digester.*;
-import org.apache.commons.pipeline.Pipeline;
-import org.apache.commons.pipeline.StageQueue;
-import org.apache.commons.pipeline.impl.SingleThreadStageQueue;
+import org.apache.commons.pipeline.*;
 import org.xml.sax.Attributes;
 
 
@@ -65,19 +61,20 @@ import org.xml.sax.Attributes;
  * </ul>
  *
  * @author Kris Nuttycombe, National Geophysical Data Center
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  * @todo Add support for more complicated StageQueue construction and configuration as part of the Stage 
  * tag processing.
  */
 public class PipelineRuleSet extends RuleSetBase {
-    private List nestedRuleSets;
+    private static Class[] addBranchTypes = { String.class, Pipeline.class };
+    private List<RuleSet> nestedRuleSets;
     
     /** Creates a new instance of ChainRuleSet */
     public PipelineRuleSet() {
     }
     
     /** Creates a new instance of ChainRuleSet */
-    public PipelineRuleSet(List nestedRuleSets) {
+    public PipelineRuleSet(List<RuleSet> nestedRuleSets) {
         this.nestedRuleSets = nestedRuleSets;
     }
     
@@ -88,44 +85,39 @@ public class PipelineRuleSet extends RuleSetBase {
     public void addRuleInstances(Digester digester) {
         ObjectCreationFactory factory = new PipelineFactory();
         
+        //rules to create pipeline
         digester.addFactoryCreate("pipeline", factory);
         digester.addSetProperties("pipeline");
-        
+                
         // these rules are used to add subchains to the main pipeline
         digester.addFactoryCreate("*/branch/pipeline", factory);
-        digester.addRule("*/branch/pipeline", new CallMethodRule(1, "addBranch", 2, new Class[] { String.class, Pipeline.class }));
+        digester.addRule("*/branch/pipeline", new CallMethodRule(1, "addBranch", 2, addBranchTypes));
         digester.addCallParam("*/branch/pipeline", 0, "key");
         digester.addCallParam("*/branch/pipeline", 1, 0);
         
         //this rule is intended to be used to add a pipeline element. the ChainLogger is
         //simply the default if no pipeline element class is specified
-        digester.addFactoryCreate("*/pipeline/stage", StageFactory.class, "stageFactory", false);
+        digester.addObjectCreate("*/pipeline/stage", "org.apache.commons.pipeline.BaseStage", "className");
         digester.addSetProperties("*/pipeline/stage");
-        digester.addSetNext("*/pipeline/stage", "addStage", "org.apache.commons.pipeline.Pipeline$Stage");
+        digester.addRule("*/pipeline/stage", new CallMethodRule(1, "addStage", 2, new Class[] { Stage.class, StageDriver.class }));
+        digester.addCallParam("*/pipeline/stage", 0, true);
         
-        //rule for enqueuing string
+        //this rule is used to create a stage driver for a specific stage
+        digester.addObjectCreate("*/pipeline/stage/stageDriver", "org.apache.commons.pipeline.impl.SingleThreadStageDriver", "className");
+        digester.addSetProperties("*/pipeline/stage/stageDriver");
+        digester.addCallParam("*/pipeline/stage/stageDriver", 1, true);
+        
+        //rule for enqueuing string onto the first stage in a pipeline
         digester.addCallMethod("*/stage/enqueue/value", "enqueue", 0);
-    }
-    
-    
-    public static class StageFactory extends AbstractObjectCreationFactory {
-        private static final Class[] DEFAULT_STAGE_CONSTRUCTOR_PARAMCLASSES = { StageQueue.class };
         
-        public Object createObject(Attributes attributes) throws java.lang.Exception {
-            String queueClassName = attributes.getValue("queueClass");
-            Class queueClass = (queueClassName == null) ? SingleThreadStageQueue.class : Class.forName(queueClassName);
-            
-            String stageClassName = attributes.getValue("className");
-            if (stageClassName == null) throw new IllegalArgumentException("className attribute may not be null for element <stage>");
-            Class stageClass = Class.forName(stageClassName);
-            
-            Constructor constructor = stageClass.getConstructor(DEFAULT_STAGE_CONSTRUCTOR_PARAMCLASSES);
-            return constructor.newInstance(new Object[] {queueClass.newInstance()});
-        }       
+        //rules for enqueueing an object
+        digester.addObjectCreate("*/stage/enqueue/object", "java.lang.Object", "className");
+        digester.addSetProperties("*/stage/enqueue/object");
+        digester.addSetNext("*/stage/enqueue/object", "enqueue", "java.lang.Object");
     }
+            
     
-    
-    public class PipelineFactory extends AbstractObjectCreationFactory {        
+    private class PipelineFactory extends AbstractObjectCreationFactory {        
         public Object createObject(Attributes attributes) throws java.lang.Exception {
             String configURI = attributes.getValue("configURI");
             if (configURI == null) {
@@ -134,8 +126,8 @@ public class PipelineRuleSet extends RuleSetBase {
             else {
                 Digester subDigester = new Digester();
                 if (nestedRuleSets != null) {
-                    for (Iterator iter = nestedRuleSets.iterator(); iter.hasNext();) {
-                        subDigester.addRuleSet((RuleSet) iter.next());
+                    for (RuleSet ruleset : nestedRuleSets) {
+                        subDigester.addRuleSet(ruleset);
                     }
                     
                     Pipeline pipeline = (Pipeline) subDigester.parse(configURI);
@@ -146,5 +138,14 @@ public class PipelineRuleSet extends RuleSetBase {
                 }
             }
         }
+    }
+    
+    
+    private class StageCompletionRule extends Rule {
+        public void end(String namespace, String name) throws Exception {
+
+            super.end(namespace, name);
+        }
+        
     }
 }

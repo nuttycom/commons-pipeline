@@ -18,8 +18,8 @@ package org.apache.commons.pipeline.impl;
 
 import java.io.File;
 import java.util.regex.Pattern;
-import org.apache.commons.pipeline.StageQueue;
-import org.apache.commons.pipeline.Pipeline.Stage;
+import java.util.Queue;
+import org.apache.commons.pipeline.BaseStage;
 import org.apache.log4j.Logger;
 
 /**
@@ -30,18 +30,20 @@ import org.apache.log4j.Logger;
  * resulting File objects placed on the subsequent stage's queue.
  *
  * @author Kris Nuttycombe, National Geophysical Data Center
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
-public class FileFinderStage extends Stage {
+public class FileFinderStage extends BaseStage {
     private static final Logger log = Logger.getLogger(FileFinderStage.class);
     private String filePattern = ".*";
     Pattern pattern;
     
     /** Creates a new instance of FileFinder */
-    public FileFinderStage(StageQueue queue) {
-        super(queue);
-    };
+    public FileFinderStage() { }
     
+    /** Creates a new instance of FileFinder that uses the specified queue. */     
+    public FileFinderStage(Queue<Object> queue) {
+        super(queue);
+    }
     
     /**
      * Precompiles the regex pattern for matching against filenames

@@ -17,42 +17,51 @@
 package org.apache.commons.pipeline.impl;
 
 import java.io.*;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Queue;
 import org.apache.commons.pipeline.StageException;
-import org.apache.commons.pipeline.StageQueue;
-import org.apache.commons.pipeline.Pipeline.Stage;
+import org.apache.commons.pipeline.BaseStage;
 import org.apache.log4j.Logger;
-import sun.net.www.protocol.http.HttpURLConnection;
+
 
 /**
  * This {@link org.apache.commons.pipeline.Pipeline$Stage Stage} provides the functionality 
  * needed to retrieve data from an HTTP URL. Multipart responses are not yet supported.
  *
  * @author Kris Nuttycombe, National Geophysical Data Center
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
-public class HttpFileDownloadStage extends Stage {
+public class HttpFileDownloadStage extends BaseStage {
     private static final int BUFFER_SIZE = 10000;
     private static Logger log = Logger.getLogger(HttpFileDownloadStage.class);
-    private String workDir;
+    private String workDir = "/tmp";
     private File fworkDir;
+    
+    public HttpFileDownloadStage() { }
+    
+    /**
+     * Creates a new HttpFileDownloadStage with the specified work directory.
+     */
+    public HttpFileDownloadStage(String workDir) {
+        this.workDir = workDir;
+    }
     
     /**
      * Default constructor - creates work directory in /tmp
      */
-    public HttpFileDownloadStage(StageQueue queue) {
+    public HttpFileDownloadStage(Queue<Object> queue) {
         super(queue);
-        this.workDir = "/tmp";
     }
     
     /**
      * Creates a new instance of HttpFileDownload with the specified work directory
      * into which to download files.
      */
-    public HttpFileDownloadStage(StageQueue queue, String workDir) {
+    public HttpFileDownloadStage(Queue<Object> queue, String workDir) {
         super(queue);
         this.workDir = workDir;
     }
@@ -191,7 +200,7 @@ public class HttpFileDownloadStage extends Stage {
      */
     public static URL handleRedirects(URL url) throws IOException, MalformedURLException {
         java.net.HttpURLConnection.setFollowRedirects(false);
-        HttpURLConnection con = new HttpURLConnection(url, url.getHost(), url.getPort());
+        HttpURLConnection con = (HttpURLConnection) url.openConnection();
         int response = con.getResponseCode();
         log.debug("Response code for " + url + " = " + response);
         
