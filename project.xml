@@ -1,0 +1,89 @@
+<?xml version="1.0"?>
+<project>
+  <pomVersion>3</pomVersion>
+  <name>commons-pipeline</name>
+  <id>commons-pipeline</id>
+  <currentVersion>0.0.1</currentVersion>
+  <organization>
+    <name>The Apache Software Foundation</name>
+    <url>http://www.apache.org/</url>
+  </organization>
+  <inceptionYear>2004</inceptionYear>
+  <package>org.apache.commons.pipeline</package>
+
+  <shortDescription>A simple pipeline processing framework.</shortDescription>
+
+  <description>
+    
+  </description>
+
+  <url>http://jakarta.apache.org/commons/sandbox/pipeline/</url>
+  <siteAddress></siteAddress>
+  <siteDirectory></siteDirectory>
+  <distributionDirectory></distributionDirectory>
+
+  <repository>
+    <connection></connection>
+    <url></url>
+  </repository>
+
+  <developers>
+    <developer>
+      <name>Kris Nuttycombe</name>
+      <id>kjn</id>
+      <email>kris.nuttycombe@noaa.gov</email>
+      <organization>National Geophysical Data Center</organization>
+    </developer>
+  </developers>
+
+  <dependencies>
+    <dependency>
+      <groupId>commons-digester</groupId>
+      <artifactId>commons-digester</artifactId>
+      <version>1.6</version>
+      <url>http://jakarta.apache.org/commons/digester</url>
+    </dependency>
+
+    <dependency>
+      <groupId>commons-net</groupId>
+      <artifactId>commons-net</artifactId>
+      <version>1.2.1</version>
+      <url>http://jakarta.apache.org/commons/net</url>
+    </dependency>
+
+    <dependency>
+      <groupId>log4j</groupId>
+      <artifactId>log4j</artifactId>
+      <version>1.2.8</version>
+      <url>http://logging.apache.org/</url>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <nagEmailAddress>kris.nuttycombe@noaa.gov </nagEmailAddress>
+    <sourceDirectory>src/java</sourceDirectory>
+    <unitTestSourceDirectory>src/test</unitTestSourceDirectory>
+    <aspectSourceDirectory/>
+
+    <!-- Unit test cases -->
+    <unitTest>
+      <includes>
+        <include>**/*Test.java</include>
+      </includes>
+    </unitTest>
+              
+    <!-- J A R  R E S O U R C E S -->
+    <!-- Resources that are packaged up inside the JAR file -->
+    <resources></resources>
+
+    <!-- Integration unit test cases -->
+    <integrationUnitTest/>
+
+    <jars></jars>
+  </build>
+</project>
+
+
+
+
+
