@@ -5,17 +5,18 @@
   <name>Commons Pipeline</name>
   <id>commons-pipeline</id>
   <logo>/images/pipeline-logo-white.png</logo>
-  <currentVersion>0.0.1</currentVersion>
+
+  <currentVersion>0.1.0</currentVersion>
   <inceptionYear>2004</inceptionYear>
   <package>org.apache.commons.pipeline</package>
 
   <shortDescription>A simple pipeline processing framework.</shortDescription>
-
   <description>
-    
+    A framework for constructing pipelined processing systems that support
+    concurrent processing of objects in multiple processing stages.
   </description>
 
-  <url>http://jakarta.apache.org/commons/sandbox/pipeline/</url>
+  <url>http://jakarta.apache.org/commons/sandbox/pipeline</url>
   <siteAddress></siteAddress>
   <siteDirectory></siteDirectory>
   <distributionDirectory></distributionDirectory>
@@ -23,6 +24,7 @@
   <repository>
     <connection></connection>
     <url></url>
+
   </repository>
 
   <developers>
@@ -31,21 +33,48 @@
       <id>kjn</id>
       <email>kris.nuttycombe@noaa.gov</email>
       <organization>National Geophysical Data Center</organization>
+
     </developer>
   </developers>
 
   <dependencies>
     <dependency>
+      <groupId>commons-beanutils</groupId>
+      <artifactId>commons-beanutils</artifactId>
+      <version>1.7.0</version>
+
+      <url>http://jakarta.apache.org/commons/beanutils</url>
+    </dependency>
+
+    <dependency>
+      <groupId>commons-collections</groupId>
+      <artifactId>commons-collections</artifactId>
+      <version>3.1</version>
+
+      <url>http://jakarta.apache.org/commons/collections</url>
+    </dependency>
+
+    <dependency>
       <groupId>commons-digester</groupId>
       <artifactId>commons-digester</artifactId>
       <version>1.6</version>
+
       <url>http://jakarta.apache.org/commons/digester</url>
+    </dependency>
+
+    <dependency>
+      <groupId>commons-logging</groupId>
+      <artifactId>commons-logging</artifactId>
+      <version>1.0.4</version>
+
+      <url>http://jakarta.apache.org/commons/logging</url>
     </dependency>
 
     <dependency>
       <groupId>commons-net</groupId>
       <artifactId>commons-net</artifactId>
       <version>1.2.1</version>
+
       <url>http://jakarta.apache.org/commons/net</url>
     </dependency>
 
@@ -53,35 +82,37 @@
       <groupId>log4j</groupId>
       <artifactId>log4j</artifactId>
       <version>1.2.8</version>
-      <url>http://logging.apache.org/</url>
+
+      <url>http://logging.apache.org</url>
     </dependency>
   </dependencies>
 
   <build>
-    <nagEmailAddress>kris.nuttycombe@noaa.gov </nagEmailAddress>
+    <nagEmailAddress>kris.nuttycombe@noaa.gov</nagEmailAddress>
     <sourceDirectory>src/java</sourceDirectory>
-    <unitTestSourceDirectory>src/test</unitTestSourceDirectory>
-    <aspectSourceDirectory/>
-
+    
     <!-- Unit test cases -->
+
+    <unitTestSourceDirectory>src/test</unitTestSourceDirectory>
     <unitTest>
       <includes>
         <include>**/*Test.java</include>
       </includes>
-    </unitTest>
-              
-    <!-- J A R  R E S O U R C E S -->
-    <!-- Resources that are packaged up inside the JAR file -->
-    <resources></resources>
+      <resources>
+        <resource>
+          <directory>src/test/resources</directory>
 
-    <!-- Integration unit test cases -->
-    <integrationUnitTest/>
-
-    <jars></jars>
+          <includes>
+            <include>**/*.properties</include>
+            <include>**/*.xml</include>
+          </includes>
+        </resource>
+      </resources>
+    </unitTest>    
   </build>
+
+  
 </project>
-
-
 
 
 
