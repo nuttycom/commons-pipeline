@@ -9,16 +9,24 @@
 
  <body>
 
-<section name="The Pipeline Component">
-
+<section name="The Processing Pipeline">
 <p>
-  This component provides a set of pipeline utilities designed around 
-  work queues that run in parallel to sequentially process data objects 
-  data objects.
+  This project provides a set of serial processing utilities designed around 
+  the concept of a processing pipeline. A pipeline in its simplest form is 
+  a series of work queue processors that allow objects to be passed between 
+  stages in a sequential fashion.
 </p>
-<br/>
-<br/>
-<br/>
+<p>
+  The primary processing element in a pipeline is called a Stage. A stage contains
+  an input queue of objects for which it it is a consumer, and acts a producer 
+  of processed objects for subsequent stages and pipeline branches. A stage can
+  act as a filter for data, or may have more complex responsibilities such
+  as finding and allocating resources for subsequent stages.
+</p>
+<p>
+  In addition to sequential processing, a simple event model is provided to
+  enable asynchronous communication between stages in the pipeline.
+</p>
 </section>
 
 <section name="Releases">
@@ -33,6 +41,10 @@
 <section name="Documentation">
   <p>
      The <a href="apidocs/index.html">JavaDoc API documents</a> are available online.
+  </p>
+  <p>
+    Please refer to the org.apache.commons.pipeline.config.DigesterPipelineFactoryTest 
+    source code for a simple example of how to use the pipeline.
   </p>
 </section>
 
