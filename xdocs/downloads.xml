@@ -38,24 +38,23 @@
 -->
          <p>
             Access to the source tree to see the latest and greatest code is possible
-            through <a href="cvs-usage.html">anonymous SVN access</a>.
+            through anonymous SVN access at:
+	    <ul>
+	    <li>http://svn.apache.org/repos/asf/jakarta/commons/sandbox/pipeline/trunk</li>
+	    </ul>
          </p>
+         <p>
+            The subversion repository can be browsed at:
+	    <ul>
+	    <li>http://svn.apache.org/viewcvs.cgi/jakarta/commons/sandbox/pipeline/trunk/</li>
+	    </ul>
+	    Yes, this URL does browse the subversion repository despite the "viewcvs" component
+	    in the URL.
+         </p>
+	 <p>
+	   For more information on subversion, see <a href="http://www.apache.org/dev/version-control.html">here</a>.
+	 </p>
       </section>
 
-<!--
-      <section name="Release Candidate">
-         <p>
-            Release candidates for the upcoming 1.1 release can be downloaded 
-            <a href="http://cvs.apache.org/~dirkv/builds/">here</a>.
-         </p>
-         <p>
-            Please review and report any problem on the 
-            <a href="mail-lists.html">mailing list</a>.
-         </p>
-         <p>
-            Final release target is 20 October 2003. 
-         </p>
-      </section>
--->
    </body>
 </document>
