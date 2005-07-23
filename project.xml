@@ -6,7 +6,7 @@
   <id>commons-pipeline</id>
   <logo>/images/pipeline-logo-white.png</logo>
 
-  <currentVersion>0.1.0</currentVersion>
+  <currentVersion>0.1.0-dev</currentVersion>
   <inceptionYear>2004</inceptionYear>
   <package>org.apache.commons.pipeline</package>
 
