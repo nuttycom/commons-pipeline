@@ -17,8 +17,9 @@
   </description>
 
   <url>http://jakarta.apache.org/commons/sandbox/pipeline</url>
-  <siteAddress></siteAddress>
-  <siteDirectory></siteDirectory>
+  <siteAddress>people.apache.org</siteAddress>
+  <siteDirectory>/www/jakarta.apache.org/commons/sandbox/pipeline</siteDirectory>
+
   <distributionDirectory></distributionDirectory>
 
   <repository>
@@ -30,10 +31,8 @@
   <developers>
     <developer>
       <name>Kris Nuttycombe</name>
-      <id>kjn</id>
       <email>kris.nuttycombe@noaa.gov</email>
       <organization>National Geophysical Data Center</organization>
-
     </developer>
   </developers>
 
