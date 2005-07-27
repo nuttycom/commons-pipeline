@@ -1,5 +1,5 @@
 /*
- *   Copyright 2004 The Apache Software Foundation
+ *   Copyright 2005 The Apache Software Foundation
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
  *   you may not use this file except in compliance with the License.
@@ -13,79 +13,76 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  *
+ * $Log: StageMonitor.java,v $
+ * Revision 1.4  2005/07/25 22:04:54  kjn
+ * Corrected Apache licensing, documentation.
+ *
+ * Revision 1.3  2005/07/21 17:02:43  kjn
+ * Corrected dependencies
+ *
+ * Revision 1.2  2005/07/19 21:07:13  kjn
+ * Changed from class to interface.
  */
 
 package org.apache.commons.pipeline;
 
-
-import java.util.*;
+import java.util.List;
 
 /**
  * A monitor used to control concurrent processing of data in a stage.
  *
- * @author <a href="mailto:directory-dev@incubator.apache.org">Apache Directory Project</a>
- * @version $Rev$
+ * @author <a href="mailto:Kris.Nuttycombe@noaa.gov">Kris Nuttycombe</a>, National Geophysical Data Center, NOAA
  */
-public class StageMonitor {
-    /** Enumeration of possible states for the stage. */
-    public enum Status { STARTING, RUNNING, STOP_REQUESTED, STOPPED }
-    private Status status = Status.STOPPED;
-    private List<Throwable> errors = new ArrayList<Throwable>();
+public interface StageMonitor {
+    public enum State { STARTING, RUNNING, STOP_REQUESTED, STOPPED, ERROR }
     
     /**
      * StageDriver has been requested to start stage processing.
-     * Implementations of this method should change the monitor's status to
-     * {@link Status#STARTING}.
+     * Implementations of this method should change the driver's state to
+     * {@link State#STARTING}.
      */
-    public synchronized void startRequested() {
-        if (this.status == Status.STOPPED) this.status = Status.STARTING;
-    }
+    public void startRequested();
     
     /**
      * StageDriver has started execution.
-     * Implementations of this method should change the monitor's status to
-     * {@link Status#RUNNING}.
+     * Implementations of this method should change the driver's state to
+     * {@link State#RUNNING}.
      */
-    public synchronized void driverStarted() {
-        if (this.status == Status.STOPPED || this.status == Status.STARTING) this.status = Status.RUNNING;
-    }
+    public void driverStarted();
     
     /**
      * StageDriver has been requested to halt stage processing.
-     * Implementations of this method should change the monitor's status to
-     * {@link Status#STOPPING}.
+     * Implementations of this method should change the driver's state to
+     * {@link State#STOPPING}.
      */
-    public synchronized void stopRequested() {
-        this.status = Status.STOP_REQUESTED;
-        this.notifyAll();
-    }
+    public void stopRequested();
     
     /**
      * StageDriver has finished execution.
-     * Implementations of this method should change the monitor's status to
-     * {@link Status#STOPPED}.
+     * Implementations of this method should change the driver's state to
+     * {@link State#STOPPED}.
      */
-    public synchronized void driverStopped() {
-        this.status = Status.STOPPED;
-    }
+    public void driverStopped();
     
     /**
-     * Monitor for successful enqueue operations on the stage. Implementations
-     * overriding this method must call {@link Object#notifyAll() this.notifyAll()} to
-     * ensure that any threads waiting on this monitor are notified.
+     * Notify the driver of successful enqueue operations on any stage managed
+     * by the driver. 
      */
-    public synchronized void enqueueOccurred() {
-        this.notifyAll();
-    }
+    public void enqueueOccurred();
     
     /**
      * Monitors driver thread interruption failures.
      *
      * @param fault the faulting exception
      */
-    public void driverFailed( InterruptedException fault ) {
-        this.errors.add(fault);
-    }
+    public void driverFailed( InterruptedException fault );
+    
+    /**
+     * Monitors preprocessing failures.
+     *
+     * @param fault the faulting exception
+     */
+    public void preprocessFailed(Throwable fault);
     
     /**
      * Monitors handler failures.
@@ -93,22 +90,23 @@ public class StageMonitor {
      * @param data the data that was being processed as the fault occurred
      * @param fault the faulting exception
      */
-    public void processingFailed( Object data, Throwable fault ) {
-        this.errors.add(fault);
-    }
+    public void processingFailed( Object data, Throwable fault);
+        
+    /**
+     * Monitors preprocessing failures.
+     *
+     * @param fault the faulting exception
+     */
+    public void postprocessFailed(Throwable fault);
     
     /**
-     * Returns the current status of stage processing.
+     * Returns the current state of stage processing.
      */
-    public synchronized Status status() {
-        return this.status;
-    }
+    public State getState();
     
     /**
-     * Returns a list of errors recorded by this monitor
+     * Returns a list of errors recorded by this StageDriver
      */
-    public List<Throwable> getErrors() {
-        return errors;
-    }
+    public List<Throwable> getErrors();
 }
 

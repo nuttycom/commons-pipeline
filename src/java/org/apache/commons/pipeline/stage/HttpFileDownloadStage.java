@@ -60,19 +60,11 @@ public class HttpFileDownloadStage extends BaseStage {
     /**
      * Creates a new instance of HttpFileDownload with the specified work directory
      * into which to download files.
+     * @deprecated Let File.createTempFile take care of the working directory issue.
      */
     public HttpFileDownloadStage(Queue<Object> queue, String workDir) {
         super(queue);
         this.workDir = workDir;
-    }
-    
-    /**
-     * Creates the directory {@link #setWorkDir(String) workDir} if it does
-     * not exist.
-     */
-    public void preprocess() throws StageException {
-        if (fworkDir == null) fworkDir = new File(workDir);
-        if (!this.fworkDir.exists()) fworkDir.mkdirs();
     }
     
     /**
@@ -87,14 +79,14 @@ public class HttpFileDownloadStage extends BaseStage {
      * @throws ClassCastException if the parameter obj is not an instance of java.net.URL
      */
     public void process(Object obj) throws StageException {
-        if (!this.fworkDir.exists()) throw new StageException("The work directory for file download " + workDir.toString() + " does not exist.");
         Map params = new HashMap();
         
         URL url;
         try {
             if (obj instanceof String) {
+                /*
                 String loc = (String) obj;
-                /*int paramIndex = loc.indexOf('?');
+                int paramIndex = loc.indexOf('?');
                 if (paramIndex > 0) {
                     url = new URL(loc.substring(0, paramIndex));
                     for (StringTokenizer st = new StringTokenizer(loc.substring(paramIndex + 1), "&"); st.hasMoreTokens();) {
@@ -108,18 +100,16 @@ public class HttpFileDownloadStage extends BaseStage {
                         }
                     }
                 }
-                else {*/
-                    url = new URL((String) obj);
+                else {
+                 */
+                url = new URL((String) obj);
                 //}
-            }
-            else if (obj instanceof URL) {
+            } else if (obj instanceof URL) {
                 url = (URL) obj;
-            }
-            else {
+            } else {
                 throw new IllegalArgumentException("Unrecognized parameter class to process() for HttpFileDownload: " + obj.getClass().getName() + "; must be URL or String");
             }
-        }
-        catch (MalformedURLException e) {
+        } catch (MalformedURLException e) {
             throw new StageException("Malformed URL: " + obj.toString(), e);
         }
         
@@ -137,24 +127,22 @@ public class HttpFileDownloadStage extends BaseStage {
         java.net.HttpURLConnection con = null;
         try {
             con = (java.net.HttpURLConnection) url.openConnection();
-            /*if (!params.isEmpty()) {
+            /*
+            if (!params.isEmpty()) {
                 con.setRequestMethod("GET");
                 for (Iterator iter = params.entrySet().iterator(); iter.hasNext();) {
                     Map.Entry entry = (Map.Entry) iter.next();
                     con.setRequestProperty((String) entry.getKey(), (String) entry.getValue());
                 }
-            }*/
-        }
-        catch (IOException e) {
+            }
+             */
+        } catch (IOException e) {
             throw new StageException(e.getMessage(), e);
         }
         
-        long time = System.currentTimeMillis();
-        String path = url.getPath();
-        String fileName = path.substring(path.lastIndexOf('/')) + "." + time; //tag the downloaded file with the time of retrieval.
-        File workFile = new File(workDir, fileName);
-        
+        File workFile = null;
         try {
+            workFile = File.createTempFile("http-file-download","tmp");
             //log.debug("About to connect.");
             //con.connect();
             //log.debug("Connection status: " + con.getResponseCode());
@@ -164,21 +152,24 @@ public class HttpFileDownloadStage extends BaseStage {
             for (int results = 0; (results = in.read(buffer)) != -1;) {
                 out.write(buffer, 0, results);
             }
-        }
-        catch (IOException e) {
+            out.close();
+            in.close();
+        } catch (IOException e) {
             throw new StageException("An error occurred downloading a data file from " + url.toString() + ": " + e.getMessage(), e);
-        }
-        finally {
+        } finally {
             con.disconnect();
         }
         
         this.exqueue(workFile);
     }
     
-
+    
     /**
      * Sets the working directory for the file download. If the directory does
      * not already exist, it will be created during the preprocess() step.
+     * If you do not set this directory, the work directory will be the
+     * default temporary directory for your machine type.
+     * @deprecated Let File.createTempFile worry about were to create files.
      */
     public void setWorkDir(String workDir) {
         this.workDir = workDir;
@@ -210,11 +201,9 @@ public class HttpFileDownloadStage extends BaseStage {
             
             if (location.startsWith("http:")) {
                 url = new URL(location);
-            }
-            else if (location.startsWith("/")) {
+            } else if (location.startsWith("/")) {
                 url = new URL("http://" + url.getHost() + location);
-            }
-            else {
+            } else {
                 url = new URL(con.getURL(), location);
             }
             

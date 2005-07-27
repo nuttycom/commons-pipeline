@@ -1,5 +1,5 @@
 /*
- * Copyright 2004 The Apache Software Foundation
+ * Copyright 2005 The Apache Software Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,11 @@
  * limitations under the License. 
  *
  * Created on February 12, 2004, 1:48 PM
+ *
+ * $Log: PipelineRuleSet.java,v $
+ * Revision 1.3  2005/07/25 22:04:54  kjn
+ * Corrected Apache licensing, documentation.
+ *
  */
 
 package org.apache.commons.pipeline.config;
@@ -22,8 +27,6 @@ import java.util.List;
 import org.apache.commons.digester.*;
 import org.apache.commons.pipeline.*;
 import org.xml.sax.Attributes;
-
-
 
 /**
  * <P>This is a Digester RuleSet that provides rules for parsing a process pipeline
@@ -42,13 +45,7 @@ import org.xml.sax.Attributes;
  *  created in this manner are added to the pipeline in the order that they
  *  occur in the configuration file. The class of the stage is specified by the
  *  <i>className</i> attribute; all other attributes are used by Digester to set bean
- *  properties on the newly created Stage object. At present, Stages configured using
- *  this tag must provide a one-argument constructor that takes a StageQueue instance. 
- *  By default, the stage will be constructed with a 
- * {@link org.apache.commons.pipeline.impl.SingleThreadStageQueue SingleThreadStageQueue}
- *  instance if the queueClass attribute is not set; otherwise the stage will be
- *  constructed with a new instance of the specified class, which should provide
- *  a no-arguments constructor.</li>
+ *  properties on the newly created Stage object. </li>
  *
  *  <li>&lt;enqueue/&gt; - Enqueue an object onto the first stage in the pipeline.</li>
  *  <li>&lt;branch/%gt; - Add a branch to a pipeline. The contents of this tag should
@@ -60,10 +57,7 @@ import org.xml.sax.Attributes;
  *  attribute.
  * </ul>
  *
- * @author Kris Nuttycombe, National Geophysical Data Center
- * @version $Revision$
- * @todo Add support for more complicated StageQueue construction and configuration as part of the Stage 
- * tag processing.
+ * @author <a href="mailto:Kris.Nuttycombe@noaa.gov">Kris Nuttycombe</a>, National Geophysical Data Center, NOAA
  */
 public class PipelineRuleSet extends RuleSetBase {
     private static Class[] addBranchTypes = { String.class, Pipeline.class };
@@ -103,7 +97,7 @@ public class PipelineRuleSet extends RuleSetBase {
         digester.addCallParam("*/pipeline/stage", 0, true);
         
         //this rule is used to create a stage driver for a specific stage
-        digester.addObjectCreate("*/pipeline/stage/stageDriver", "org.apache.commons.pipeline.impl.SingleThreadStageDriver", "className");
+        digester.addObjectCreate("*/pipeline/stage/stageDriver", "org.apache.commons.pipeline.driver.SingleThreadStageDriver", "className");
         digester.addSetProperties("*/pipeline/stage/stageDriver");
         digester.addCallParam("*/pipeline/stage/stageDriver", 1, true);
         

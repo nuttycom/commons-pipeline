@@ -1,5 +1,5 @@
 /*
- * Copyright 2004 The Apache Software Foundation
+ * Copyright 2005 The Apache Software Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,11 @@
  * limitations under the License.
  *
  * Created on February 12, 2004, 3:42 PM
+ *
+ * $Log: DigesterPipelineFactory.java,v $
+ * Revision 1.2  2005/07/25 22:04:54  kjn
+ * Corrected Apache licensing, documentation.
+ *
  */
 
 package org.apache.commons.pipeline.config;
@@ -32,8 +37,7 @@ import org.apache.commons.pipeline.Pipeline;
 /**
  * This factory is designed to simplify creating a pipeline using Digester.
  *
- * @author Kris Nuttycombe, National Geophysical Data Center
- * @version $Revision$
+ * @author <a href="mailto:Kris.Nuttycombe@noaa.gov">Kris Nuttycombe</a>, National Geophysical Data Center, NOAA
  */
 public class DigesterPipelineFactory implements org.apache.commons.pipeline.PipelineFactory {
     

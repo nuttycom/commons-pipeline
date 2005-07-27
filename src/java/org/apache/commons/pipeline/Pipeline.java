@@ -1,5 +1,5 @@
 /*
- * Copyright 2004 The Apache Software Foundation
+ * Copyright 2005 The Apache Software Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,17 +12,21 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
+ * $Log: Pipeline.java,v $
+ * Revision 1.7  2005/07/25 22:04:54  kjn
+ * Corrected Apache licensing, documentation.
+ *
  */
 
 package org.apache.commons.pipeline;
 
-import java.lang.Iterable;
-import java.util.*;
-import org.apache.commons.collections.OrderedMap;
-import org.apache.commons.collections.OrderedMapIterator;
-import org.apache.commons.collections.map.ListOrderedMap;
-
-
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import org.apache.commons.pipeline.driver.SimpleStageDriver;
 
 /**
  * This class represents a processing system consisting of a number of stages
@@ -34,71 +38,84 @@ import org.apache.commons.collections.map.ListOrderedMap;
  * with methods to start and stop processing for all stages, as well as
  * a simple framework for asynchronous event-based communication between stages.
  *
- * @author Kris Nuttycombe, National Geophysical Data Center
- * @version $Revision$
+ * @author <a href="mailto:Kris.Nuttycombe@noaa.gov">Kris Nuttycombe</a>, National Geophysical Data Center, NOAA
  */
 public final class Pipeline implements Iterable<Stage>, Runnable {
     private List<StageEventListener> listeners = new ArrayList<StageEventListener>();
-
+    
     /**
-     * Ordered map of stages in the pipeline where the keys are stages and the
-     * values are the associated StageDrivers.
+     * List of stages in the pipeline
      */
-    protected OrderedMap stages = new ListOrderedMap();
-    //private OrderedMap<Stage,StageDriver> stages = new ListOrderedMap<Stage,StageDriver>();
+    protected List<Stage> stages = new ArrayList<Stage>();;
     
     /**
      * Map of pipeline branches where the keys are branch names.
      */
     protected Map<String,Pipeline> branches = new HashMap<String,Pipeline>();
     
-    
     /**
      * Creates a new Pipeline
      */
-    public Pipeline() {  }
-    
+    public Pipeline() {
+        stages = new ArrayList<Stage>();
+    }
     
     /**
-     * Adds a Stage object to the end of this Pipeline. The pipeline will use
-     * the specified StageDriver to run the stage.
-     *
-     * It is critical that all stages added to a pipeline have distinct hash codes
-     * to maintain stage ordering integrity. For this reason, it is
-     * strongly suggested that Stage implementations <i>do not</i> override
-     * the default {@link java.lang.Object#hashCode() hashCode()} implementation
-     * in java.lang.Object.
+     * Creates a new Pipeline with the List of Stages
+     */
+    public Pipeline(List<Stage> stages){
+        for (Stage stage: stages){
+            this.addStage(stage);
+        }
+    }
+    
+    /**
+     * Adds a {@link Stage} object to the end of this Pipeline. The pipeline will use
+     * the specified {@link StageDriver} to run the stage.
      *
      * @todo throw IllegalStateException if the stage is being used in a different pipeline
      */
     public void addStage(Stage stage, StageDriver driver) {
-        if (stage == null) throw new IllegalArgumentException("Argument \"stage\" for call to Pipeline.addStage() may not be null.");
-        if (driver == null) throw new IllegalArgumentException("Argument \"driver\" for call to Pipeline.addStage() may not be null.");
+        if (stage == null) throw new IllegalArgumentException("Argument \"stage\" for call to Pipeline.addStage(Stage, StageDriver) may not be null.");
+        if (driver == null) throw new IllegalArgumentException("Argument \"driver\" for call to Pipeline.addStage(Stage, StageDriver) may not be null.");
         
-        stage.setPipeline(this);        
-        this.stages.put(stage, driver);
+        stage.setStageDriver(driver);
+        this.addStage(stage);
     }
     
+    /**
+     * Adds a {@link Stage} object to the end of this Pipeline.
+     */
+    public void addStage(Stage stage){
+        if (stage == null) throw new IllegalArgumentException("Argument \"stage\" for call to Pipeline.addStage() may not be null.");
+        stage.setPipeline(this);
+        this.stages.add(stage);
+    }
     
     /**
-     * Returns the first stage in the pipeline
+     * Returns the first stage in the pipeline, or null if there are no stages
      */
     public Stage head() {
-        return (Stage) stages.firstKey();
+        if (stages.size() > 0){
+            return (Stage) stages.get(0);
+        } else {
+            return null;
+        }
     }
     
     /**
-     * Returns the stage after the specified stage in the pipeline
+     * Returns the stage after the specified stage in the pipeline.
      */
     public Stage getNextStage(Stage stage) {
-        return (Stage) stages.nextKey(stage);
+        int nextIndex = stages.indexOf(stage) + 1;
+        return (stages.size() > nextIndex) ? stages.get(nextIndex) : null;
     }
     
     /**
      * Returns an Iterator for stages in the pipeline.
      */
     public Iterator<Stage> iterator() {
-        return (Iterator<Stage>) stages.mapIterator();
+        return stages.iterator();
     }
     
     /**
@@ -113,7 +130,6 @@ public final class Pipeline implements Iterable<Stage>, Runnable {
         this.branches.put(key, pipeline);
     }
     
-    
     /**
      * Runs the pipeline from start to finish.
      */
@@ -121,23 +137,26 @@ public final class Pipeline implements Iterable<Stage>, Runnable {
         try {
             start();
             finish();
-        }
-        catch (InterruptedException e) {
+        } catch (StageException e) {
             throw new RuntimeException(e.getMessage(), e);
         }
     }
     
-    
     /**
-     * This method iterates over the stages in the pipeline, looking up a {@link StageDriver}
-     * for each stage and using that driver to start the stage. Startups
-     * may occur sequentially or in parallel, depending upon the stage driver
-     * used.
+     * This method iterates over the stages in the pipeline, looking up a
+     * {@link StageDriver} for each stage and using that driver to start the stage.
+     * Startups may occur sequentially or in parallel, depending upon the stage driver
+     * used.  If a the stage has not been configured with a {@link StageDriver},
+     * we will use the default, non-threaded {@link SimpleStageDriver}.
      */
-    public void start() {
-        for (OrderedMapIterator iter = stages.orderedMapIterator(); iter.hasNext();) {
-            Stage stage = (Stage) iter.next();
-            StageDriver driver = (StageDriver) iter.getValue();
+    public void start() throws StageException {
+        for (Stage stage: this.stages){
+            StageDriver driver = stage.getStageDriver();
+            if (driver == null){
+                driver = new SimpleStageDriver();
+                stage.setStageDriver(driver);
+            }
+            
             driver.start(stage);
         }
         
@@ -158,10 +177,9 @@ public final class Pipeline implements Iterable<Stage>, Runnable {
      * @throws InterruptedException if a worker thread was interrupted at the time
      * a stage was asked to finish execution.
      */
-    public void finish() throws InterruptedException {
-        for (OrderedMapIterator iter = stages.orderedMapIterator(); iter.hasNext();) {
-            Stage stage = (Stage) iter.next();
-            StageDriver driver = (StageDriver) iter.getValue();
+    public void finish() throws StageException {
+        for (Stage stage: this.stages){
+            StageDriver driver = stage.getStageDriver();
             driver.finish(stage);
         }
         
@@ -170,24 +188,21 @@ public final class Pipeline implements Iterable<Stage>, Runnable {
         }
     }
     
-    
     /**
      * Enqueues an object on the first stage if the pipeline is not empty
      * @param o the object to enque
      */
     public void enqueue(Object o){
-        if (!stages.isEmpty()) ((Stage) stages.firstKey()).enqueue(o);
+        if (!stages.isEmpty()) stages.get(0).enqueue(o);
     }
-    
     
     /**
      * This method is used by stages to pass data from one stage to the next.
      */
     public void pass(Stage source, Object data) {
-        Stage next = (Stage) this.stages.nextKey(source);
+        Stage next = this.getNextStage(source);
         if (next != null) next.enqueue(data);
     }
-    
     
     /**
      * Simple method that recursively checks whether the specified
@@ -202,7 +217,6 @@ public final class Pipeline implements Iterable<Stage>, Runnable {
         return false;
     }
     
-    
     /**
      * Adds an EventListener to the pipline that will be notified by calls
      * to {@link Stage#raise(StageEvent)}.
@@ -210,7 +224,6 @@ public final class Pipeline implements Iterable<Stage>, Runnable {
     public void addEventListener(StageEventListener listener) {
         listeners.add(listener);
     }
-    
     
     /**
      * Sequentially notifies each listener in the list of an event, and propagates

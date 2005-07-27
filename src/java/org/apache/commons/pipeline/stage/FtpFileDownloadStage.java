@@ -52,20 +52,22 @@ public class FtpFileDownloadStage extends BaseStage {
     /** Holds value of property password. */
     private String password;
     
-    
+    /** Holds value of property port.     */
+    private int port;
+
     /**
      * Default constructor - creates work directory in /tmp
      */
     public FtpFileDownloadStage() {
     }
-   
+    
     /**
      * Constructor specifying work directory.
      */
     public FtpFileDownloadStage(String workDir) {
         this.workDir = workDir;
     }
-   
+    
     /**
      * Default constructor - creates work directory in /tmp
      */
@@ -92,7 +94,7 @@ public class FtpFileDownloadStage extends BaseStage {
         
         try {
             //connect to the ftp site
-            client.connect(host);
+            client.connect(host, port);
             log.debug(client.getReplyString());
             if(!FTPReply.isPositiveCompletion(client.getReplyCode())) {
                 throw new IOException("FTP server at host " + host + " refused connection.");
@@ -103,21 +105,15 @@ public class FtpFileDownloadStage extends BaseStage {
             if(!FTPReply.isPositiveCompletion(client.getReplyCode())) {
                 throw new IOException("FTP login failed for user " + user + ": " + client.getReplyString());
             }
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             throw new StageException(e.getMessage(), e);
         }
     }
     
     /**
-     * Removes a java.net.URL (an HTTP URL) from the input queue, follows any redirects
-     * specified by that URL, and then retrieves the data to a file over an HTTP
-     * connection. The file name for download is the
-     * last element of the URL path for download appended with a timestamp
-     * value, and it is stored in the directory specified by {@link #setWorkDir(String) setWorkDir()}, or to
-     * /tmp if no work directory is set.
+     * Retrieves files that match the specified FileSpec from the FTP server
+     * and stores them in the work directory.
      *
-     * @param obj The URL from which to download data.
      * @throws ClassCastException if the parameter obj is not an instance of java.net.URL
      */
     public void process(Object obj) throws StageException {
@@ -126,51 +122,70 @@ public class FtpFileDownloadStage extends BaseStage {
         FileSpec spec = (FileSpec) obj;
         
         try {
+            client.setFileType(spec.type.intValue());
             client.changeWorkingDirectory(spec.path);
-            log.debug(client.getReplyString());
             if(!FTPReply.isPositiveCompletion(client.getReplyCode())) {
                 throw new IOException("FTP client could not change to remote directory " + spec.path + ": " + client.getReplyString());
             }
             
-            log.debug("FTP connection successfully established to " + host + spec.path);
+            log.debug("FTP connection successfully established to " + host + ":" + spec.path);
             
             //get the list of files
             client.enterLocalPassiveMode();
-            String[] dirs = client.listNames();
-            if(!FTPReply.isPositiveCompletion(client.getReplyCode())) {
-                throw new IOException("FTP client could not obtain file list : " + client.getReplyString());
-            }
-            //client.enterLocalActiveMode();
-                       
-            log.debug("FTP file list successfully obtained.");
-            
-            Pattern pattern = Pattern.compile(spec.pattern);
-            
-            log.debug("File pattern is " + spec.pattern);
-            
-            //create the list of netcdf track files to get
-            for (int i = 0; i < dirs.length; i++){
-                log.debug("Obtaining files in directory " + dirs[i]);
-                String[] files = client.listNames(dirs[i]);
-                
-                for (int j = 0; j < files.length; j++) {
-                    if (pattern.matcher(files[j]).matches()) {
-                        log.debug("Matched file name " + files[j] + " against pattern " + spec.pattern);
-                        File f = new File(workDir + File.separatorChar + files[j]);
-                        if (! f.getParentFile().exists()) f.getParentFile().mkdir();
-                        
-                        OutputStream out = new FileOutputStream(f);
-                        client.retrieveFile(files[j], out);
-                        this.exqueue(f);
-                    }
-                }
-            }
-        }
-        catch (IOException e) {
+            searchCurrentDirectory("", spec);
+        } catch (IOException e) {
             throw new StageException(e.getMessage(), e);
         }
     }
     
+    
+    /**
+     * Search the current working directory of the FTP client, saving files
+     * to the path specified by workDir + the path to the file on the FTP server.
+     * This method will optionally recursively search directories on the remote server.
+     */
+    private void searchCurrentDirectory(String path, FileSpec spec) throws IOException {
+        FTPFile[] files = client.listFiles();
+        if(!FTPReply.isPositiveCompletion(client.getReplyCode())) {
+            throw new IOException("FTP client could not obtain file list : " + client.getReplyString());
+        }
+        
+        search: for (FTPFile file : files) {
+            String localPath = path + File.separatorChar + file.getName();
+            
+            if (file.isDirectory() && spec.recursive) {
+                log.debug("Recursing into directory " + file.getName());
+                client.changeWorkingDirectory(file.getName());
+                searchCurrentDirectory(localPath, spec);
+                client.changeToParentDirectory();
+            } else {
+                log.debug("Examining file " + localPath);
+                for (Criterion crit : spec.criteria) {
+                    if (!crit.matches(file)) {
+                        log.info("File " + localPath + " failed criterion check " + crit);
+                        continue search;
+                    }
+                }
+                
+                File localFile = new File(workDir + File.separatorChar + localPath);
+                if (localFile.exists() && !spec.overwrite) {
+                    //if (spec.)
+                } else {
+                    if (! localFile.getParentFile().exists()) localFile.getParentFile().mkdir();
+                    
+                    OutputStream out = new FileOutputStream(localFile);
+                    try {
+                        client.retrieveFile(file.getName(), out);
+                    } finally {
+                        out.flush();
+                        out.close();
+                    }
+                }
+                
+                this.exqueue(localFile);
+            }
+        }
+    }
     
     /**
      * Disconnects from FTP server. Errors are logged.
@@ -178,12 +193,10 @@ public class FtpFileDownloadStage extends BaseStage {
     public void release() {
         try {
             client.disconnect(); //close ftp connection
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             log.error(e.getMessage(), e);
         }
     }
-    
     
     /**
      * Sets the working directory for the file download. If the directory does
@@ -240,18 +253,57 @@ public class FtpFileDownloadStage extends BaseStage {
         this.password = password;
     }
     
+    /**
+     * Getter for property port.
+     * @return Value of property port.
+     */
+    public int getPort() {
+        return this.port;
+    }
+
+    /**
+     * Setter for property port.
+     * @param port New value of property port.
+     */
+    public void setPort(int port) {
+        this.port = port;
+    }
     
     /**
      * This class is used to specify a path and pattern of file for the FtpFileDownload
      * to retrieve.
      */
     public static class FileSpec {
+        //enumeration of legal file types
+        public enum FileType {
+            ASCII(FTPClient.ASCII_FILE_TYPE),
+                    BINARY(FTPClient.BINARY_FILE_TYPE);
+            
+            private int type;
+            
+            private FileType(int type) {
+                this.type = type;
+            }
+            
+            public int intValue() {
+                return this.type;
+            }
+        }
         
         /** Holds value of property path. */
         private String path = "/";
         
-        /** Holds value of property pattern. */
-        private String pattern = ".*";
+        /** Holds flag that determines whether or not to perform recursive search of the specified path */
+        private boolean recursive;
+        
+        // Holds flag that determines whether or not to overwrite local files
+        private boolean overwrite;
+        
+        // Type of file (ascii or binary)
+        private FileType type = FileType.BINARY;
+        
+        // List of criteria that the retrieved file must satisfy.
+        private Set<Criterion> criteria = new HashSet<Criterion>();
         
         /** Getter for property path.
          * @return Value of property path.
@@ -271,10 +323,10 @@ public class FtpFileDownloadStage extends BaseStage {
         
         /** Getter for property pattern.
          * @return Value of property pattern.
-         *
+         * @deprecated - not retrievable from criterion
          */
         public String getPattern() {
-            return this.pattern;
+            return null;
         }
         
         /** Setter for property pattern.
@@ -282,7 +334,106 @@ public class FtpFileDownloadStage extends BaseStage {
          *
          */
         public void setPattern(String pattern) {
-            this.pattern = pattern;
+            this.criteria.add(new FileNameMatchCriterion(pattern));
+        }
+        
+        /**
+         * Add a criterion to the set of criteria that must be matched for files
+         * to be downloaded
+         */
+        public void addCriterion(Criterion crit) {
+            this.criteria.add(crit);
+        }
+        
+        /**
+         * Sets the flag determining whether or not the stage will recursively
+         * traverse the directory tree to find files.
+         */
+        public void setRecursive(boolean recursive) {
+            this.recursive = recursive;
+        }
+        
+        /**
+         * Returns whether or not the stage will recursively
+         * traverse the directory tree to find files.
+         */
+        public boolean isRecursive() {
+            return this.recursive;
+        }
+        
+        /**
+         * Sets the file type for the transfer. Legal values are "ascii" and "binary".
+         * Binary transfers are the default.
+         */
+        public void setFileType(String fileType) {
+            if ("ascii".equalsIgnoreCase(fileType)) {
+                this.type = FileType.ASCII;
+            } else {
+                this.type = FileType.BINARY;
+            }
+        }
+        
+        /**
+         * Returns the file type for the transfer.
+         */
+        public String getFileType() {
+            return this.type.toString();
+        }
+    }
+    
+    /**
+     * This class is used to specify a criterion that the downloaded file
+     * must satisfy.
+     */
+    public interface Criterion {
+        public boolean matches(FTPFile file);
+    }
+    
+    /**
+     * Matches file names based upon the Java regex supplied in the constructor.
+     */
+    public static class FileNameMatchCriterion implements Criterion {
+        // precompiled pattern used to match filenames
+        private Pattern pattern;
+        private String _pattern;
+        
+        public FileNameMatchCriterion(String pattern) {
+            this._pattern = pattern;
+            this.pattern = Pattern.compile(pattern);
+        }
+        
+        public boolean matches(FTPFile file) {
+            return pattern.matcher(file.getName()).matches();
+        }
+        
+        public String toString() {
+            return "filename matches pattern " + _pattern;
+        }
+    }
+    
+    /**
+     * Matches files based upon a set of date constraints
+     */
+    public static class FileDateMatchCriterion implements Criterion {
+        private Date startDate;
+        private Date endDate;
+        
+        public FileDateMatchCriterion(Date startDate, Date endDate) {
+            this.startDate = startDate;
+            this.endDate = endDate;
+        }
+        
+        public boolean matches(FTPFile file) {
+            Calendar cal = file.getTimestamp();
+            if ((startDate != null && cal.getTime().before(startDate)) || (endDate != null && cal.getTime().after(endDate))) {
+                return false;
+            } else {
+                return true;
+            }
+        }
+        
+        public String toString() {
+            return "file date is between " + startDate + " and " + endDate;
         }
     }
 }
