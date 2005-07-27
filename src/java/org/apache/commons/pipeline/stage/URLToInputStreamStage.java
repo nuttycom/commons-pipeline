@@ -1,0 +1,101 @@
+/*
+ * Copyright 2005 The Apache Software Foundation
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * Created on July 21, 2005, 9:55 AM
+ *
+ * $Log: URLToInputStreamStage.java,v $
+ * Revision 1.4  2005/07/25 22:04:54  kjn
+ * Corrected Apache licensing, documentation.
+ *
+ */
+
+package org.apache.commons.pipeline.stage;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Queue;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.commons.pipeline.BaseStage;
+import org.apache.commons.pipeline.StageException;
+
+/**
+ * Converts a URL into an InputStream.  This stage keeps track of all
+ * input streams that are created and closes them at the release step.
+ *
+ * @author Travis Stevens, National Geophysical Data Center, NOAA
+ */
+public class URLToInputStreamStage extends BaseStage {
+    
+    private static final Log log = LogFactory.getLog(URLToInputStreamStage.class);
+    private List<InputStream> inputStreams = new ArrayList<InputStream>();
+    
+    /** Creates a new instance of URLToInputStreamStage */
+    public URLToInputStreamStage() {    }
+    
+    /** Creates a new instance of URLToInputStreamStage */
+    public URLToInputStreamStage(Queue<Object> queue) {
+        super(queue);
+    }    
+    
+    /** 
+     * Takes a String or a URL object representing a URL and exqueues the input 
+     * stream returned by opening that URL.
+     *
+     * @param obj A String or URL object
+     */    
+    public void process(Object obj) throws org.apache.commons.pipeline.StageException {        
+        URL url = null;
+        if (obj instanceof URL){
+            url = (URL) obj;
+        } else if (obj instanceof String) {
+            String urlString = (String) obj;
+            try {
+                url = new URL(urlString);
+            } catch (MalformedURLException e){
+                throw new StageException("Error converting url String:" + urlString,e);
+            }
+        }
+        
+        try {
+            InputStream inputStream = url.openStream();
+            this.inputStreams.add(inputStream);
+            log.info("enqueing input stream");
+            this.exqueue(inputStream);
+        } catch (IOException e){
+            throw new StageException("Error with stream from url:" + url,e);
+        }
+    }
+    
+    /**
+     * Ensure that all opened input streams are closed.
+     */
+    public void release() {
+        log.info("running post process number of streams:" + inputStreams.size());
+        while(inputStreams.size() > 0){
+            InputStream is = (InputStream) inputStreams.remove(0);
+            try {
+                is.close();
+                log.info("closed stream");
+            } catch (IOException e){
+                log.warn("Error closing stream",e);
+            }
+        }
+    }
+}
