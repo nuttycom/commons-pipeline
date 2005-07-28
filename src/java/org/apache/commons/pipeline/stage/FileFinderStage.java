@@ -4,36 +4,34 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
- * limitations under the License. 
+ * limitations under the License.
  */
 
-package org.apache.commons.pipeline.impl;
+package org.apache.commons.pipeline.stage;
 
 import java.io.File;
 import java.util.regex.Pattern;
 import java.util.Queue;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.commons.pipeline.BaseStage;
-import org.apache.log4j.Logger;
 
 /**
- * This {@link org.apache.commons.pipeline.Pipeline$Stage Stage} is used
- * to recursively find (non-directory) files that match the specified regex.
+ * <p>This {@link org.apache.commons.pipeline.Pipeline$Stage Stage} is used
+ * to recursively find (non-directory) files that match the specified regex.</p>
  *
- * File elements in the stage's queue will be recursively searched with the
- * resulting File objects placed on the subsequent stage's queue.
- *
- * @author Kris Nuttycombe, National Geophysical Data Center
- * @version $Revision$
+ * <p>File elements in the stage's queue will be recursively searched with the
+ * resulting File objects placed on the subsequent stage's queue.</p>
  */
 public class FileFinderStage extends BaseStage {
-    private static final Logger log = Logger.getLogger(FileFinderStage.class);
+    private static final Log log = LogFactory.getLog(FileFinderStage.class);
     private String filePattern = ".*";
     Pattern pattern;
     

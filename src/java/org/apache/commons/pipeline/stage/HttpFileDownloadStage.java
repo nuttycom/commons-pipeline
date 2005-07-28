@@ -4,9 +4,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -14,22 +14,29 @@
  * limitations under the License. 
  */
 
-package org.apache.commons.pipeline.impl;
+package org.apache.commons.pipeline.stage;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Queue;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.commons.pipeline.StageException;
 import org.apache.commons.pipeline.BaseStage;
-import org.apache.log4j.Logger;
 
 
 /**
- * This {@link org.apache.commons.pipeline.Pipeline$Stage Stage} provides the functionality 
+ * This {@link org.apache.commons.pipeline.Pipeline$Stage Stage} provides the functionality
  * needed to retrieve data from an HTTP URL. Multipart responses are not yet supported.
  *
  * @author Kris Nuttycombe, National Geophysical Data Center
@@ -37,14 +44,15 @@ import org.apache.log4j.Logger;
  */
 public class HttpFileDownloadStage extends BaseStage {
     private static final int BUFFER_SIZE = 10000;
-    private static Logger log = Logger.getLogger(HttpFileDownloadStage.class);
-    private String workDir = "/tmp";
+    private String workDir = null;
+    private static Log log = LogFactory.getLog(HttpFileDownloadStage.class);
     private File fworkDir;
     
     public HttpFileDownloadStage() { }
     
     /**
      * Creates a new HttpFileDownloadStage with the specified work directory.
+     * @deprecated Let File.createTempFile take care of the working directory issue.
      */
     public HttpFileDownloadStage(String workDir) {
         this.workDir = workDir;

@@ -14,22 +14,22 @@
  * limitations under the License. 
  */
 
-package org.apache.commons.pipeline.impl;
+package org.apache.commons.pipeline.stage;
 
 import org.apache.commons.pipeline.StageException;
 import org.apache.commons.pipeline.BaseStage;
-import org.apache.log4j.Logger;
 import java.util.Queue;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 
 /**
- * A do-nothing implementation of Stage with Log4j logging. Useful for debugging purposes.
- *
- * @author Kris Nuttycombe, National Geophysical Data Center
- * @version $Revision$
+ * A do-nothing implementation of Stage that simply logs the state of processing. 
+ * and each object seen by its {@link #process(Object)} method.
+ * Useful for debugging purposes. 
  */
 public class LogStage extends BaseStage {
-    private Logger log = Logger.getLogger(this.getClass());
+    private Log log = LogFactory.getLog(this.getClass());
     
     /**
      * Creates a new LogStage.

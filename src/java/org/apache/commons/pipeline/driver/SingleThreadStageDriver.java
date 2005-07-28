@@ -14,25 +14,24 @@
  * limitations under the License.
  */
 
-package org.apache.commons.pipeline.impl;
+package org.apache.commons.pipeline.driver;
 
-import org.apache.commons.pipeline.StageException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.commons.pipeline.StageDriver;
 import org.apache.commons.pipeline.StageMonitor;
 import org.apache.commons.pipeline.Stage;
-import org.apache.log4j.Logger;
-import java.util.*;
+import org.apache.commons.pipeline.StageException;
 
 /**
  * This is a very simple implementation of a StageDriver which spawns
- * only a single thread to process a stage. A SingleThreadStageDriver
- * may not be used to manipulate more than a single stage.
- *
- * @author Kris Nuttycombe, National Geophysical Data Center
- * @version $Revision$
+ * only a single thread to process a stage. 
  */
-public class SingleThreadStageDriver implements StageDriver {
-    private Logger log = Logger.getLogger(this.getClass());
+public class SingleThreadStageDriver extends StageDriver {
+    private static final Log log = LogFactory.getLog(SingleThreadStageDriver.class);
     
     //wait timeout to ensure deadlock cannot occur on thread termination
     private long timeout = 500;

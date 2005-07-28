@@ -4,40 +4,43 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
- * limitations under the License. 
+ * limitations under the License.
  */
 
-package org.apache.commons.pipeline.impl;
+package org.apache.commons.pipeline.stage;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashSet;
 import java.util.regex.Pattern;
 import java.util.Queue;
+import java.util.Set;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.commons.net.ftp.FTPClient;
+import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
 import org.apache.commons.pipeline.BaseStage;
 import org.apache.commons.pipeline.StageException;
-import org.apache.log4j.Logger;
 
 /**
- * This {@link org.apache.commons.pipeline.Pipeline$Stage Stage} provides the 
- * functionality needed to retrieve data from an FTP URL. Multipart responses 
- * are not yet supported.
- *
- * @author Kris Nuttycombe, National Geophysical Data Center
- * @version $Revision$
+ * <p>This {@link org.apache.commons.pipeline.Pipeline$Stage Stage} provides the
+ * functionality needed to retrieve data from an FTP URL. Multipart responses
+ * are not yet supported.</p>
  */
 public class FtpFileDownloadStage extends BaseStage {
-    private static Logger log = Logger.getLogger(FtpFileDownloadStage.class);
+    private static final Log log = LogFactory.getLog(FtpFileDownloadStage.class);
     
     private String workDir = "/tmp";
     private File fworkDir;
