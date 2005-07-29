@@ -12,21 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
- * Created on July 18, 2005, 4:30 PM
- *
- * $Log: AddToCollectionStage.java,v $
- * Revision 1.2  2005/07/25 22:04:54  kjn
- * Corrected Apache licensing, documentation.
- *
- * Revision 1.1  2005/07/21 17:41:19  tns
- * Added Simple Driver, made some pipeline modifications and added some stages.
- *
- * Revision 1.4  2005/07/21 17:14:04  kjn
- * Changed to use commons-logging
- *
- * Revision 1.3  2005/07/19 22:27:04  kjn
- * Fixed javadocs
  */
 
 package org.apache.commons.pipeline.stage;
@@ -38,8 +23,6 @@ import org.apache.commons.pipeline.BaseStage;
 /**
  * This is a simple stage in the pipeline which will add the object to the
  * specified collection.
- *
- * @author Travis Stevens, National Geophysical Data Center, NOAA
  */
 public class AddToCollectionStage<T> extends BaseStage {
     

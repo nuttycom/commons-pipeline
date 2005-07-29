@@ -12,11 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License. 
- *
- * $Log: StageEventListener.java,v $
- * Revision 1.2  2005/07/25 22:04:54  kjn
- * Corrected Apache licensing, documentation.
- *
  */
 
 package org.apache.commons.pipeline;
@@ -26,8 +21,6 @@ import java.util.EventObject;
 
 /**
  * Listener interface for {@link StageEvent}s
- *
- * @author <a href="mailto:Kris.Nuttycombe@noaa.gov">Kris Nuttycombe</a>, National Geophysical Data Center, NOAA
  */
 public interface StageEventListener extends EventListener {
     

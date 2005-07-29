@@ -12,12 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
- * $Log: InputStreamLineBreakStage.java,v $
- * Revision 1.2  2005/07/26 18:20:28  tns
- * apache license.
- *
- *
  */
 
 package org.apache.commons.pipeline.stage;
@@ -30,16 +24,22 @@ import org.apache.commons.pipeline.BaseStage;
 import org.apache.commons.pipeline.StageException;
 
 /**
- *  Breaks up an InputStream by line and exqueues the line as a string.
- *
- * @author tns
- * @version $Id$
+ * Breaks up an InputStream by line and exqueues each resulting line.
  */
 public class InputStreamLineBreakStage extends BaseStage {
+    /**
+     * Holds value of property ignoringBlankLines.
+     */
+    private boolean ignoringBlankLines = false;
     
     /** Creates a new instance of InputStreamLineBreakStage */
     public InputStreamLineBreakStage() {
         super();
+    }
+
+    /** Creates a new instance of InputStreamLineBreakStage */
+    public InputStreamLineBreakStage(boolean ignoringBlankLines) {
+        this.ignoringBlankLines = ignoringBlankLines;
     }
 
     public void process(Object obj) throws org.apache.commons.pipeline.StageException {
@@ -49,13 +49,29 @@ public class InputStreamLineBreakStage extends BaseStage {
             BufferedReader buffered = new BufferedReader(reader);
             String line = buffered.readLine();
             while (line != null){
-                this.exqueue(line);
+                if (!(ignoringBlankLines && line.trim().equals(""))) {
+                    this.exqueue(line);
+                }
                 line = buffered.readLine();
             }
         } catch (IOException e){
             throw new StageException(e);
         }
-
     }
-    
+
+    /**
+     * Getter for property ignoreBlankLines.
+     * @return Value of property ignoreBlankLines.
+     */
+    public boolean isIgnoringBlankLines()  {
+        return this.ignoringBlankLines;
+    }
+
+    /**
+     * Specifies that this stage will not exqueue blank lines.
+     * @param ignoreBlankLines New value of property ignoreBlankLines.
+     */
+    public void setIgnoringBlankLines(boolean ignoringBlankLines)  {
+        this.ignoringBlankLines = ignoringBlankLines;
+    }
 }

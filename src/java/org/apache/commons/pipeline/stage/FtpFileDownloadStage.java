@@ -40,7 +40,7 @@ import org.apache.commons.pipeline.StageException;
  * are not yet supported.</p>
  */
 public class FtpFileDownloadStage extends BaseStage {
-    private static final Log log = LogFactory.getLog(FtpFileDownloadStage.class);
+    private final Log log = LogFactory.getLog(FtpFileDownloadStage.class);
     
     private String workDir = "/tmp";
     private File fworkDir;

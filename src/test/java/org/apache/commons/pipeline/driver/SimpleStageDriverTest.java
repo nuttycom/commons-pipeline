@@ -12,13 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
- * Created on July 22, 2005, 4:10 PM
- *
- * $Log: SimpleStageDriverTest.java,v $
- * Revision 1.3  2005/07/25 22:19:17  kjn
- * Updated licenses, documentation.
- *
  */
 
 package org.apache.commons.pipeline.driver;
@@ -33,8 +26,6 @@ import org.apache.commons.pipeline.StageException;
 
 /**
  * Test cases for SimpleStageDriver.
- *
- * @author <a href="mailto:Kris.Nuttycombe@noaa.gov">Kris Nuttycombe</a>, National Geophysical Data Center, NOAA
  */
 public class SimpleStageDriverTest extends TestCase {
     

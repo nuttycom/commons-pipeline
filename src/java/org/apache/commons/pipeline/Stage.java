@@ -12,15 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
- * Created on November 18, 2004, 10:34 AM
- *
- * $Log: Stage.java,v $
- * Revision 1.5  2005/07/25 22:04:54  kjn
- * Corrected Apache licensing, documentation.
- *
- * Revision 1.4  2005/07/22 23:18:35  kjn
- * Added callback in setStageDriver to set the stage's StageMonitor; documentation & code cleanup
  */
 
 package org.apache.commons.pipeline;
@@ -38,8 +29,6 @@ import java.util.Queue;
  * etc) the monitor is necessary to provide proper synchronization.</P>
  * <P>Stages extending this abstract base class automatically establish a relationship
  * with a pipeline when added to that pipeline.</P>
- *
- * @author <a href="mailto:Kris.Nuttycombe@noaa.gov">Kris Nuttycombe</a>, National Geophysical Data Center, NOAA
  */
 public abstract class Stage {
     

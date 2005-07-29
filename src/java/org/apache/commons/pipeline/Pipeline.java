@@ -12,11 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
- * $Log: Pipeline.java,v $
- * Revision 1.7  2005/07/25 22:04:54  kjn
- * Corrected Apache licensing, documentation.
- *
  */
 
 package org.apache.commons.pipeline;
@@ -37,8 +32,6 @@ import org.apache.commons.pipeline.driver.SimpleStageDriver;
  * This class allows all stages in the pipeline to be managed collectively
  * with methods to start and stop processing for all stages, as well as
  * a simple framework for asynchronous event-based communication between stages.
- *
- * @author <a href="mailto:Kris.Nuttycombe@noaa.gov">Kris Nuttycombe</a>, National Geophysical Data Center, NOAA
  */
 public final class Pipeline implements Iterable<Stage>, Runnable {
     private List<StageEventListener> listeners = new ArrayList<StageEventListener>();

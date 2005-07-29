@@ -12,13 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
- * Created on July 19, 2005, 9:38 AM
- * 
- * $Log: RunPredefinedStaticMethodStageTest.java,v $
- * Revision 1.2  2005/07/25 22:19:17  kjn
- * Updated licenses, documentation.
- *
  */
 
 package org.apache.commons.pipeline.stage;
@@ -34,8 +27,6 @@ import org.apache.commons.pipeline.driver.SimpleStageDriver;
 
 /**
  * Test cases for RunPredefinedStaticMethodStage.
- *
- * @author Travis Stevens, National Geophysical Data Center, NOAA
  */
 public class RunPredefinedStaticMethodStageTest extends TestCase {
     

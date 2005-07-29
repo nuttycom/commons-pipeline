@@ -12,16 +12,6 @@
  *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
- *
- * $Log: StageMonitor.java,v $
- * Revision 1.4  2005/07/25 22:04:54  kjn
- * Corrected Apache licensing, documentation.
- *
- * Revision 1.3  2005/07/21 17:02:43  kjn
- * Corrected dependencies
- *
- * Revision 1.2  2005/07/19 21:07:13  kjn
- * Changed from class to interface.
  */
 
 package org.apache.commons.pipeline;
@@ -30,8 +20,6 @@ import java.util.List;
 
 /**
  * A monitor used to control concurrent processing of data in a stage.
- *
- * @author <a href="mailto:Kris.Nuttycombe@noaa.gov">Kris Nuttycombe</a>, National Geophysical Data Center, NOAA
  */
 public interface StageMonitor {
     public enum State { STARTING, RUNNING, STOP_REQUESTED, STOPPED, ERROR }

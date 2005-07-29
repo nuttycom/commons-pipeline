@@ -38,14 +38,11 @@ import org.apache.commons.pipeline.BaseStage;
 /**
  * This {@link org.apache.commons.pipeline.Pipeline$Stage Stage} provides the functionality
  * needed to retrieve data from an HTTP URL. Multipart responses are not yet supported.
- *
- * @author Kris Nuttycombe, National Geophysical Data Center
- * @version $Revision$
  */
 public class HttpFileDownloadStage extends BaseStage {
     private static final int BUFFER_SIZE = 10000;
     private String workDir = null;
-    private static Log log = LogFactory.getLog(HttpFileDownloadStage.class);
+    private Log log = LogFactory.getLog(HttpFileDownloadStage.class);
     private File fworkDir;
     
     public HttpFileDownloadStage() { }
@@ -197,7 +194,7 @@ public class HttpFileDownloadStage extends BaseStage {
      *
      * TODO: Add a max_hops parameterized version
      */
-    public static URL handleRedirects(URL url) throws IOException, MalformedURLException {
+    public URL handleRedirects(URL url) throws IOException, MalformedURLException {
         java.net.HttpURLConnection.setFollowRedirects(false);
         HttpURLConnection con = (HttpURLConnection) url.openConnection();
         int response = con.getResponseCode();

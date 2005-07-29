@@ -12,16 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License. 
- *
- * Created on July 19, 2005, 4:34 PM
- *
- * $Log: AbstractStageMonitor.java,v $
- * Revision 1.3  2005/07/25 22:04:54  kjn
- * Corrected Apache licensing, documentation.
- *
- * Revision 1.2  2005/07/22 23:21:35  kjn
- * Added stage parameter to constructor to simplify callbacks for those monitors
- * that need to access the Stage.
  */
 
 package org.apache.commons.pipeline.driver;
@@ -37,11 +27,9 @@ import org.apache.commons.pipeline.StageMonitor.State;
 /**
  * Provades an abstract {@link StageMonitor} base class that implements methods 
  * that do not need to be synchronized.
- *
- * @author Travis Stevens, National Geophysical Data Center, NOAA
  */
 public abstract class AbstractStageMonitor implements StageMonitor {
-    private static final Log log = LogFactory.getLog(AbstractStageMonitor.class);
+    private final Log log = LogFactory.getLog(AbstractStageMonitor.class);
     
     protected Stage stage;
     protected List<Throwable> errors = new ArrayList<Throwable>();

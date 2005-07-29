@@ -12,13 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
- * Created on October 12, 2004, 11:31 AM
- *
- * $Log: BaseStage.java,v $
- * Revision 1.2  2005/07/25 22:04:54  kjn
- * Corrected Apache licensing, documentation.
- *
  */
 
 package org.apache.commons.pipeline;
@@ -30,8 +23,6 @@ import java.util.concurrent.LinkedBlockingQueue;
  * This is a simple base class for Stages with no-op implementations of the
  * {@link #preprocess()}, {@link #process()}, {@link #postprocess()},
  * and {@link #release()} methods.
- *
- * @author <a href="mailto:Kris.Nuttycombe@noaa.gov">Kris Nuttycombe</a>, National Geophysical Data Center, NOAA
  */
 public class BaseStage extends Stage {
     

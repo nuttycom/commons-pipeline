@@ -12,13 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License. 
- *
- * Created on February 12, 2004, 1:48 PM
- *
- * $Log: PipelineRuleSet.java,v $
- * Revision 1.3  2005/07/25 22:04:54  kjn
- * Corrected Apache licensing, documentation.
- *
  */
 
 package org.apache.commons.pipeline.config;
@@ -56,8 +49,6 @@ import org.xml.sax.Attributes;
  *  file or in a separate file referred to by the <code>configURI</code> pipeline
  *  attribute.
  * </ul>
- *
- * @author <a href="mailto:Kris.Nuttycombe@noaa.gov">Kris Nuttycombe</a>, National Geophysical Data Center, NOAA
  */
 public class PipelineRuleSet extends RuleSetBase {
     private static Class[] addBranchTypes = { String.class, Pipeline.class };

@@ -12,13 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
- * Created on July 19, 2005, 9:25 AM
- *
- * $Log: DynamicLookupStaticMethodStage.java,v $
- * Revision 1.2  2005/07/25 22:04:54  kjn
- * Corrected Apache licensing, documentation.
- *
  */
 
 package org.apache.commons.pipeline.stage;
@@ -38,8 +31,6 @@ import org.apache.commons.pipeline.StageException;
  * <p>The resulting object will be exqueued on the main pipeline if it is not null.  If
  * it is null, we will try to place the original object on the branch specified
  * by the nullResultBranchTag property. The default for this value is "nullResult".</p>
- *
- * @author Travis Stevens, National Geophysical Data Center, NOAA
  */
 public class DynamicLookupStaticMethodStage extends BaseStage {
     

@@ -29,7 +29,7 @@ import org.apache.commons.logging.LogFactory;
  * Useful for debugging purposes. 
  */
 public class LogStage extends BaseStage {
-    private Log log = LogFactory.getLog(this.getClass());
+    private final Log log = LogFactory.getLog(LogStage.class);
     
     /**
      * Creates a new LogStage.

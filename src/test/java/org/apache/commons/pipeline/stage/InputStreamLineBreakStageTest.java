@@ -12,12 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
- * $Log: InputStreamLineBreakStageTest.java,v $
- * Revision 1.2  2005/07/26 18:20:28  tns
- * apache license.
- *
- *
  */
 
 package org.apache.commons.pipeline.stage;
@@ -32,8 +26,7 @@ import org.apache.commons.pipeline.Pipeline;
 import org.apache.commons.pipeline.Stage;
 
 /**
- *
- * @author tns
+ * Test cases for InputStreamLineBreakStage.
  */
 public class InputStreamLineBreakStageTest extends TestCase {
     

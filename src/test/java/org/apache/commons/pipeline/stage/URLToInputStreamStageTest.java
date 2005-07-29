@@ -12,13 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
- * Created on July 21, 2005, 10:07 AM
- *
- * $Log: URLToInputStreamStageTest.java,v $
- * Revision 1.4  2005/07/25 22:19:17  kjn
- * Updated licenses, documentation.
- *
  */
 
 package org.apache.commons.pipeline.stage;
@@ -35,8 +28,6 @@ import org.apache.commons.pipeline.Stage;
 
 /**
  * Test cases for URLToInputStreamStaticStage.
- *
- * @author Travis Stevens, National Geophysical Data Center, NOAA
  */
 public class URLToInputStreamStageTest extends TestCase {
     

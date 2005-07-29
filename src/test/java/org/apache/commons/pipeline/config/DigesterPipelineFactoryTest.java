@@ -12,13 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
- * Created on October 28, 2004, 4:01 PM
- *
- * $Log: DigesterPipelineFactoryTest.java,v $
- * Revision 1.2  2005/07/25 22:19:17  kjn
- * Updated licenses, documentation.
- *
  */
 
 package org.apache.commons.pipeline.config;
@@ -36,8 +29,6 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 /**
  * Test cases for the DigesterPipelineFactory.
- *
- * @author <a href="mailto:Kris.Nuttycombe@noaa.gov">Kris Nuttycombe</a>, National Geophysical Data Center, NOAA
  */
 public class DigesterPipelineFactoryTest extends TestCase {
     private ResourceBundle testResources = ResourceBundle.getBundle("TestResources");

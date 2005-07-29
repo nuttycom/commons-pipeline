@@ -12,16 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License. 
- *
- * Created on July 19, 2005, 4:26 PM
- *
- * $Log: SimpleStageDriver.java,v $
- * Revision 1.4  2005/07/25 22:04:54  kjn
- * Corrected Apache licensing, documentation.
- *
- * Revision 1.3  2005/07/22 23:22:51  kjn
- * Changes to reflect changes in StageDriver base class, consolidation with
- * SimpleStageMonitor code to eliminate unnecessary public class.
  */
 
 package org.apache.commons.pipeline.driver;
@@ -36,12 +26,9 @@ import org.apache.commons.pipeline.StageMonitor;
 
 /**
  * This is a non-threaded version of the StageDriver.
- *
- * @author Travis Stevens, National Geophysical Data Center, NOAA
  */
-public class SimpleStageDriver extends StageDriver {
-    
-    private static final Log log = LogFactory.getLog(SimpleStageDriver.class);
+public class SimpleStageDriver extends StageDriver {    
+    private final Log log = LogFactory.getLog(SimpleStageDriver.class);
     
     /** Creates a new instance of SimpleStageDriver */
     public SimpleStageDriver() {

@@ -12,21 +12,12 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License. 
- *
- * Created on December 9, 2003, 4:24 PM
- *
- * $Log: StageException.java,v $
- * Revision 1.3  2005/07/25 22:04:54  kjn
- * Corrected Apache licensing, documentation.
- *
  */
 
 package org.apache.commons.pipeline;
 
 /**
  * Exception wrapper class for exceptions that occur while processing a stage.
- *  
- * @author <a href="mailto:Kris.Nuttycombe@noaa.gov">Kris Nuttycombe</a>, National Geophysical Data Center, NOAA
  */
 public class StageException extends java.lang.Exception {
     //Stage within which the error occurred

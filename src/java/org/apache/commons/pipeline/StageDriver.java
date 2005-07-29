@@ -12,16 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
- * Created on October 6, 2004, 4:30 PM
- *
- * $Log: StageDriver.java,v $
- * Revision 1.5  2005/07/25 22:04:54  kjn
- * Corrected Apache licensing, documentation.
- *
- * Revision 1.4  2005/07/22 23:20:27  kjn
- * Changed from interface to abstract base class to allow better use of callbacks
- * and consolidation of monitor/threading model code.
  */
 
 package org.apache.commons.pipeline;
@@ -33,8 +23,6 @@ import java.util.List;
  * stopped, and run. StageDriver implementations may run stages in one or
  * more threads, and use the {@link StageMonitor} interface to provide communication
  * between the stage, the driver, and the enclosing pipeline.
- *
- * @author <a href="mailto:Kris.Nuttycombe@noaa.gov">Kris Nuttycombe</a>, National Geophysical Data Center, NOAA
  */
 public abstract class StageDriver {
     

@@ -31,7 +31,7 @@ import org.apache.commons.pipeline.BaseStage;
  * resulting File objects placed on the subsequent stage's queue.</p>
  */
 public class FileFinderStage extends BaseStage {
-    private static final Log log = LogFactory.getLog(FileFinderStage.class);
+    private final Log log = LogFactory.getLog(FileFinderStage.class);
     private String filePattern = ".*";
     Pattern pattern;
     

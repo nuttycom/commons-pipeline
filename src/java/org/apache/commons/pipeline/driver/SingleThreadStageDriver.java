@@ -31,7 +31,7 @@ import org.apache.commons.pipeline.StageException;
  * only a single thread to process a stage. 
  */
 public class SingleThreadStageDriver extends StageDriver {
-    private static final Log log = LogFactory.getLog(SingleThreadStageDriver.class);
+    private final Log log = LogFactory.getLog(SingleThreadStageDriver.class);
     
     //wait timeout to ensure deadlock cannot occur on thread termination
     private long timeout = 500;

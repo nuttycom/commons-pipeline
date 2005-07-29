@@ -12,13 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
- * Created on July 21, 2005, 9:55 AM
- *
- * $Log: URLToInputStreamStage.java,v $
- * Revision 1.4  2005/07/25 22:04:54  kjn
- * Corrected Apache licensing, documentation.
- *
  */
 
 package org.apache.commons.pipeline.stage;
@@ -38,12 +31,9 @@ import org.apache.commons.pipeline.StageException;
 /**
  * Converts a URL into an InputStream.  This stage keeps track of all
  * input streams that are created and closes them at the release step.
- *
- * @author Travis Stevens, National Geophysical Data Center, NOAA
  */
 public class URLToInputStreamStage extends BaseStage {
-    
-    private static final Log log = LogFactory.getLog(URLToInputStreamStage.class);
+    private final Log log = LogFactory.getLog(URLToInputStreamStage.class);
     private List<InputStream> inputStreams = new ArrayList<InputStream>();
     
     /** Creates a new instance of URLToInputStreamStage */
