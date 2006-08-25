@@ -29,30 +29,18 @@ import org.apache.commons.pipeline.Stage;
 /**
  * Test cases for URLToInputStreamStaticStage.
  */
-public class URLToInputStreamStageTest extends TestCase {
+public class URLToInputStreamStageTest extends AbstractStageTest {
     
     URL url;
-    URLToInputStreamStage stage;
-    Pipeline pipe;
-    List<InputStream> results;
     
     public URLToInputStreamStageTest(String testName) {
         super(testName);
     }
     
     protected void setUp() throws Exception {
-        url = this.getClass().getClassLoader().getResource("url-input-to-stream-test.txt");
+        super.setUp();
+        this.url = this.getClass().getClassLoader().getResource("url-input-to-stream-test.txt");
         assertNotNull(url);
-        results = new ArrayList<InputStream>();
-        Stage finalStage = new AddToCollectionStage<InputStream>(results);
-        stage = new URLToInputStreamStage();
-        List<Stage> stages = new ArrayList<Stage>();
-        stages.add(stage);
-        stages.add(finalStage);
-        pipe = new Pipeline(stages);
-    }
-    
-    protected void tearDown() throws Exception {
     }
     
     public static Test suite() {
@@ -65,32 +53,42 @@ public class URLToInputStreamStageTest extends TestCase {
      * Test of process method, of class org.apache.commons.pipeline.stage.URLToInputStreamStage.
      */
     public void testProcess() throws Exception {
-        pipe.start();
-        pipe.enqueue(url);
-        assertEquals(1,results.size());
-        InputStream is = results.get(0);
-        assertNotNull(is);
+        URLToInputStreamStage stage = new URLToInputStreamStage();
+        this.init(stage);
+        
+        stage.process(url);
+        
+        assertEquals(1, testFeeder.receivedValues.size());
+        
+        InputStream in = (InputStream) testFeeder.receivedValues.get(0);
+        try {
+            assertNotNull(in);
         byte[] buffer = new byte[128];
-        int bytes = is.read(buffer);
-        pipe.finish();
+            int bytes = in.read(buffer);
+        } finally {
+            in.close();
+        }
     }
     
     /**
      * Test of postprocess method, of class org.apache.commons.pipeline.stage.URLToInputStreamStage.
      */
     public void testPostprocess() throws Exception {
-        pipe.start();
-        pipe.enqueue(url);
-        pipe.finish();
-        InputStream is = results.get(0);
+        URLToInputStreamStage stage = new URLToInputStreamStage();
+        this.init(stage);
+        
+        stage.process(url);
+        stage.release();
+        
+        assertEquals(1, testFeeder.receivedValues.size());
+
+        InputStream in = (InputStream) testFeeder.receivedValues.get(0);
         try {
             byte[] buffer = new byte[128];
-            int bytes = is.read(buffer);
+            int bytes = in.read(buffer);
             fail("input stream should have been closed, so reading should throw an exception.");
         } catch (IOException expected){
-            
+            // do nothing
         }
-        
     }
-    
 }

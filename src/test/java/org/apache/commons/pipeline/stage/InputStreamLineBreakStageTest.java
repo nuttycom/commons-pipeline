@@ -16,44 +16,16 @@
 
 package org.apache.commons.pipeline.stage;
 
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
+import java.io.InputStream;
 import junit.framework.*;
-import org.apache.commons.pipeline.Pipeline;
-import org.apache.commons.pipeline.Stage;
 
 /**
  * Test cases for InputStreamLineBreakStage.
  */
-public class InputStreamLineBreakStageTest extends TestCase {
-    
-    List results;
-    Pipeline pipe;
-    URL url;
+public class InputStreamLineBreakStageTest extends AbstractStageTest {
     
     public InputStreamLineBreakStageTest(String testName) {
         super(testName);
-    }
-
-    protected void setUp() throws Exception {
-        url = this.getClass().getClassLoader().getResource("url-input-to-stream-test.txt");
-        assertNotNull(url);
-        
-        URLToInputStreamStage stage1 = new URLToInputStreamStage();
-        InputStreamLineBreakStage stage2 = new InputStreamLineBreakStage();
-        results = new ArrayList();
-        Stage stage3 = new AddToCollectionStage(results);
-        ArrayList stages = new ArrayList();
-        stages.add(stage1);
-        stages.add(stage2);
-        stages.add(stage3);
-        pipe = new Pipeline(stages);
-    }
-
-    protected void tearDown() throws Exception {
     }
 
     public static Test suite() {
@@ -66,17 +38,49 @@ public class InputStreamLineBreakStageTest extends TestCase {
      * Test of process method, of class org.apache.commons.pipeline.stage.InputStreamLineBreakStage.
      */
     public void testProcess() throws Exception {
-        pipe.start();
-        pipe.enqueue(url);
-        pipe.finish();
+        InputStreamLineBreakStage stage = new InputStreamLineBreakStage();
+        this.init(stage);
         
-        assertEquals(3,results.size());
-        String s0 = (String) results.get(0);
-        assertEquals("line 1", s0);
-        String s1 = (String) results.get(1);
-        assertEquals("line 2", s1);
-        String s2 = (String) results.get(2);
-        assertEquals("line 3", s2);
+        InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream("url-input-to-stream-test.txt");
+        try {
+            stage.process(in);
+        } finally {
+            in.close();
+        }
+        
+        assertEquals(3, testFeeder.receivedValues.size());
+        assertEquals("line 1", testFeeder.receivedValues.get(0));
+        assertEquals("line 2", testFeeder.receivedValues.get(1));
+        assertEquals("line 3", testFeeder.receivedValues.get(2));
     }
+    
+//    /**
+//     * Test of isIgnoringBlankLines method, of class org.apache.commons.pipeline.stage.InputStreamLineBreakStage.
+//     */
+//    public void testIsIgnoringBlankLines() {
+//        System.out.println("isIgnoringBlankLines");
+//        
+//        InputStreamLineBreakStage instance = new InputStreamLineBreakStage();
+//        
+//        boolean expResult = true;
+//        boolean result = instance.isIgnoringBlankLines();
+//        assertEquals(expResult, result);
+//        
+//        fail("The test case is a prototype.");
+//    }
+//
+//    /**
+//     * Test of setIgnoringBlankLines method, of class org.apache.commons.pipeline.stage.InputStreamLineBreakStage.
+//     */
+//    public void testSetIgnoringBlankLines() {
+//        System.out.println("setIgnoringBlankLines");
+//        
+//        boolean ignoringBlankLines = true;
+//        InputStreamLineBreakStage instance = new InputStreamLineBreakStage();
+//        
+//        instance.setIgnoringBlankLines(ignoringBlankLines);
+//        
+//        fail("The test case is a prototype.");
+//    }
     
 }

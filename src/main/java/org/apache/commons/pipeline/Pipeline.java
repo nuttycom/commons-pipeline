@@ -17,11 +17,18 @@
 package org.apache.commons.pipeline;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
-import org.apache.commons.pipeline.driver.SimpleStageDriver;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.commons.pipeline.validation.PipelineValidator;
+import org.apache.commons.pipeline.validation.ValidationException;
+import org.apache.commons.pipeline.validation.ValidationFailure;
 
 /**
  * This class represents a processing system consisting of a number of stages
@@ -33,94 +40,276 @@ import org.apache.commons.pipeline.driver.SimpleStageDriver;
  * with methods to start and stop processing for all stages, as well as
  * a simple framework for asynchronous event-based communication between stages.
  */
-public final class Pipeline implements Iterable<Stage>, Runnable {
-    private List<StageEventListener> listeners = new ArrayList<StageEventListener>();
-    
+public class Pipeline implements Runnable, StageContext {
     /**
-     * List of stages in the pipeline
+     * The branch key for the main line of production. This value is reserved
+     * and may not be used as a key for other branch pipelines.
      */
-    protected List<Stage> stages = new ArrayList<Stage>();;
+    public static final String MAIN_BRANCH = "main";
+    
+    //The logger used for reporting by this pipeline
+    private final Log log = LogFactory.getLog(Pipeline.class);
+    
+    // List of stages in the pipeline, encapsulated in the drivers
+    // that will be used to run them.
+    private final LinkedList<StageDriver> drivers;
+    private final Map<Stage, StageDriver> driverMap;
+    
+    // The list of stages in the pipeline.
+    private final LinkedList<Stage> stages;
+    
+    // Map of pipeline branches where the keys are branch names.
+    private final Map<String,Pipeline> branches;
+    
+    // The list of listeners registered with the pipeline.
+    private final List<StageEventListener> listeners;
+    
+    // Holds value of property validator.
+    private PipelineValidator validator;
+    
+    // Feeder used to handle output of final stage
+    private Feeder terminalFeeder = Feeder.VOID;
     
     /**
-     * Map of pipeline branches where the keys are branch names.
-     */
-    protected Map<String,Pipeline> branches = new HashMap<String,Pipeline>();
-    
-    /**
-     * Creates a new Pipeline
+     * Creates and initializes a new Pipeline.
      */
     public Pipeline() {
-        stages = new ArrayList<Stage>();
+        this.drivers = new LinkedList<StageDriver>();
+        this.driverMap = new HashMap<Stage, StageDriver>();
+        this.stages = new LinkedList<Stage>();
+        this.branches = new HashMap<String,Pipeline>();
+        this.listeners = Collections.synchronizedList(new ArrayList<StageEventListener>());
     }
     
     /**
-     * Creates a new Pipeline with the List of Stages
+     * Adds a {@link StageEventListener} to the pipline that will be notified by calls
+     * to {@link Stage#raise(StageEvent)}.
+     * @param listener The listener to be notified.
      */
-    public Pipeline(List<Stage> stages){
-        for (Stage stage: stages){
-            this.addStage(stage);
+    public void registerListener(StageEventListener listener) {
+        listeners.add(listener);
+    }
+    
+    /**
+     * Returns the collection of {@link StageEventListener}s registered with the
+     * context.
+     * @return The collection of registered listeners.
+     */
+    public Collection<StageEventListener> getRegisteredListeners() {
+        return this.listeners;
+    }
+    
+    /**
+     * Notifies each registered listener of an event and propagates
+     * the event to any attached branches
+     * @param ev The event to be sent to registered listeners
+     */
+    public void raise(final java.util.EventObject ev) {
+        new Thread() {
+            public void run() {
+                for (StageEventListener listener : listeners) {
+                    listener.notify(ev);
+                }
+                
+                for (Pipeline branch : branches.values()) {
+                    if (branch != Pipeline.this) branch.raise(ev);
+                }
         }
+        }.start();
     }
     
     /**
-     * Adds a {@link Stage} object to the end of this Pipeline. The pipeline will use
-     * the specified {@link StageDriver} to run the stage.
-     *
-     * @todo throw IllegalStateException if the stage is being used in a different pipeline
+     * This method is used by a stage driver to pass data from one stage to the next.
+     * @return the feeder for the downstream stage, or null if no downstream
+     * stage exists.
+     * @param stage the stage for which the downstream feeder will be retrieved
      */
-    public void addStage(Stage stage, StageDriver driver) {
-        if (stage == null) throw new IllegalArgumentException("Argument \"stage\" for call to Pipeline.addStage(Stage, StageDriver) may not be null.");
-        if (driver == null) throw new IllegalArgumentException("Argument \"driver\" for call to Pipeline.addStage(Stage, StageDriver) may not be null.");
-        
-        stage.setStageDriver(driver);
-        this.addStage(stage);
-    }
-    
-    /**
-     * Adds a {@link Stage} object to the end of this Pipeline.
-     */
-    public void addStage(Stage stage){
-        if (stage == null) throw new IllegalArgumentException("Argument \"stage\" for call to Pipeline.addStage() may not be null.");
-        stage.setPipeline(this);
-        this.stages.add(stage);
-    }
-    
-    /**
-     * Returns the first stage in the pipeline, or null if there are no stages
-     */
-    public Stage head() {
-        if (stages.size() > 0){
-            return (Stage) stages.get(0);
+    public Feeder getDownstreamFeeder(Stage stage) {
+        if (stage == null) throw new IllegalArgumentException("Unable to look up downstream feeder for null stage.");
+        if (stage == drivers.getLast().getStage()) {
+            return this.terminalFeeder;
         } else {
-            return null;
+            //Iterate backwards over the list until the stage is found, then return
+            //the feeder for the subsequent stage. Comparisons are done using reference
+            //equality.
+            for (int i = drivers.size() - 2; i >= 0; i--) {
+                if (stage == drivers.get(i).getStage()) return drivers.get(i+1).getFeeder();
+            }
+        
+            throw new IllegalStateException("Unable to find stage " + stage + " in pipeline.");
         }
     }
     
     /**
-     * Returns the stage after the specified stage in the pipeline.
+     * Look up and return the source feeder for the specified pipeline branch.
+     * @param branch the string identifier of the branch for which a feeder will be returned
+     * @return the feeder for the specified branch
      */
-    public Stage getNextStage(Stage stage) {
-        int nextIndex = stages.indexOf(stage) + 1;
-        return (stages.size() > nextIndex) ? stages.get(nextIndex) : null;
+    public Feeder getBranchFeeder(String branch) {
+        return branches.get(branch).getSourceFeeder();
     }
     
     /**
-     * Returns an Iterator for stages in the pipeline.
+     * Adds a {@link Stage} object to the end of this Pipeline. If a
+     * {@link PipelineValidator} has been set using {@link #setValidator}, it will
+     * be used to validate that the appended Stage can consume the output of the
+     * previous stage of the pipeline. It does NOT validate the ability or availability
+     * of branches to consume data produced by the appended stage.
+     * @param stage the stage to be added to the pipeline
+     * @param driverFactory the factory that will be used to create a {@link StageDriver} that will run the stage
+     * @throws ValidationException if there is a non-null validator set for this pipeline and an error is
+     * encountered validating the addition of the stage to the pipeline.
      */
-    public Iterator<Stage> iterator() {
-        return stages.iterator();
+    public final void addStage(Stage stage, StageDriverFactory driverFactory) throws ValidationException {
+        if (stage == null) throw new IllegalArgumentException("Argument \"stage\" for call to Pipeline.addStage() may not be null.");
+        
+        if (validator != null) {
+            List<ValidationFailure> errors = validator.validateAddStage(this, stage, driverFactory);
+            if (errors != null && !errors.isEmpty()) {
+                throw new ValidationException("An error occurred adding stage " + stage.toString(), errors);
+            }
+        }
+        
+        stage.init(this);
+        this.stages.add(stage);
+        
+        StageDriver driver = driverFactory.createStageDriver(stage, this);
+        this.driverMap.put(stage, driver);
+        this.drivers.add(driver);
+    }
+    
+    /**
+     * Returns an unmodifiable list of stages that have been added to this
+     * pipeline.
+     * @return A list of the stages that have been added to the pipeline
+     */
+    public final List<Stage> getStages() {
+        return Collections.unmodifiableList(this.stages);
+    }
+    
+    /**
+     * Return the StageDriver for the specified Stage.
+     * @return the StageDriver for the specified Stage.
+     */
+    public final StageDriver getStageDriver(Stage stage) {
+        return this.driverMap.get(stage);
+    }
+    
+    /**
+     * Returns an unmodifiable list of stage drivers that have been added
+     * to the pipeline.
+     * @return the list of drivers for stages in the pipeline
+     */
+    public final List<StageDriver> getStageDrivers() {
+        return Collections.unmodifiableList(this.drivers);
     }
     
     /**
      * Adds a branch to the pipeline.
+     * @param key the string identifier that will be used to refer to the added branch
+     * @param pipeline the branch pipeline
+     * @throws org.apache.commons.pipeline.validation.ValidationException if the pipeline has a non-null {@link PipelineValidator} and the branch
+     * cannot consume the data produced for the branch by stages in the pipeline.
      */
-    public void addBranch(String key, Pipeline pipeline) {
-        if (key == null) throw new IllegalArgumentException("Branch key may not be null.");
-        if (pipeline == null) throw new IllegalArgumentException("Illegal attempt to set reference to null branch.");
-        if (pipeline == this || this.hasBranch(pipeline))
+    public void addBranch(String key, Pipeline pipeline) throws ValidationException {
+        if (key == null)
+            throw new IllegalArgumentException("Branch key may not be null.");
+        if (MAIN_BRANCH.equalsIgnoreCase(key))
+            throw new IllegalArgumentException("Branch key name \"" + MAIN_BRANCH + "\" is reserved.");
+        if (pipeline == null)
+            throw new IllegalArgumentException("Illegal attempt to set reference to null branch.");
+        if (pipeline == this || pipeline.hasBranch(this))
             throw new IllegalArgumentException("Illegal attempt to set reference to self as a branch (infinite recursion potential)");
         
+        if (validator != null) {
+            List<ValidationFailure> errors = validator.validateAddBranch(this, key, pipeline);
+            if (errors != null && !errors.isEmpty()) {
+                throw new ValidationException("An error occurred adding branch pipeline " + pipeline, errors);
+            }
+        }
+        
         this.branches.put(key, pipeline);
+    }
+    
+    /**
+     * Returns an unmodifiable map of branch pipelines, keyed by branch identifier.
+     * @return the map of registered branch pipelines, keyed by branch identifier
+     */
+    public Map<String,Pipeline> getBranches() {
+        return Collections.unmodifiableMap(branches);
+    }
+    
+    /**
+     * Simple method that recursively checks whether the specified
+     * pipeline is a branch of this pipeline.
+     * @param pipeline the candidate branch
+     * @return true if the specified pipeline is a branch of this pipeline, or recursively
+     * a branch of a branch. Tests are performed using reference equality.
+     */
+    private boolean hasBranch(Pipeline pipeline) {
+        if (branches.containsValue(pipeline)) return true;
+        for (Pipeline branch : branches.values()) {
+            if (branch.hasBranch(pipeline)) return true;
+            }
+            
+        return false;
+        }
+        
+    /**
+     * Returns a feeder for the first stage if the pipeline is not empty
+     * @return the feeder to feed the first stage of the pipeline
+     */
+    public Feeder getSourceFeeder() {
+        if (drivers.isEmpty()) return null;
+        return drivers.peek().getFeeder();
+        }
+    
+    /**
+     * Gets the feeder that receives output from the final stage.
+     * @return the terminal feeder being used to handle any output from the final stage. The default is {@link Feeder#VOID}
+     */
+    public Feeder getTerminalFeeder() {
+        return this.terminalFeeder;
+    }
+    
+    /**
+     * Sets the terminal feeder used to handle any output from the final stage.
+     * @param terminalFeeder the {@link Feeder} that will receive any output from the final stage
+     */
+    public void setTerminalFeeder(Feeder terminalFeeder) {
+        this.terminalFeeder = terminalFeeder;
+    }
+    
+    /**
+     * This method iterates over the stages in the pipeline, looking up a
+     * {@link StageDriver} for each stage and using that driver to start the stage.
+     * Startups may occur sequentially or in parallel, depending upon the stage driver
+     * used.  If a the stage has not been configured with a {@link StageDriver},
+     * we will use the default, non-threaded {@link SynchronousStageDriver}.
+     * @throws org.apache.commons.pipeline.StageException Thrown if there is an error during pipeline startup
+     */
+    public void start() throws StageException {
+        for (StageDriver driver: this.drivers) driver.start();
+        for (Pipeline branch : branches.values()) branch.start();
+    }
+    
+    /**
+     * This method iterates over the stages in the pipeline, looking up a {@link StageDriver}
+     * for each stage and using that driver to request that the stage finish
+     * execution. The {@link StageDriver#finish(Stage)}
+     * method will block until the stage's queue is exhausted, so this method
+     * may be used to safely finalize all stages without the risk of
+     * losing data in the queues.
+     * @throws org.apache.commons.pipeline.StageException Thrown if there is an unhandled error during stage shutdown
+     */
+    public void finish() throws StageException {
+        for (StageDriver driver: this.drivers){
+            driver.finish();
+        }
+        
+        for (Pipeline pipeline : branches.values()) {
+            pipeline.finish();
+        }
     }
     
     /**
@@ -131,108 +320,25 @@ public final class Pipeline implements Iterable<Stage>, Runnable {
             start();
             finish();
         } catch (StageException e) {
-            throw new RuntimeException(e.getMessage(), e);
+            throw new RuntimeException(e);
         }
     }
     
     /**
-     * This method iterates over the stages in the pipeline, looking up a
-     * {@link StageDriver} for each stage and using that driver to start the stage.
-     * Startups may occur sequentially or in parallel, depending upon the stage driver
-     * used.  If a the stage has not been configured with a {@link StageDriver},
-     * we will use the default, non-threaded {@link SimpleStageDriver}.
+     * Returns the validator being used to validate the pipeline structure,
+     * or null if no validation is being performed..
+     * @return Validator used to validate pipeline structure.
      */
-    public void start() throws StageException {
-        for (Stage stage: this.stages){
-            StageDriver driver = stage.getStageDriver();
-            if (driver == null){
-                driver = new SimpleStageDriver();
-                stage.setStageDriver(driver);
-            }
-            
-            driver.start(stage);
-        }
-        
-        for (Pipeline branch : branches.values()) {
-            branch.start();
-        }
-    }
-    
-    
-    /**
-     * This method iterates over the stages in the pipeline, looking up a {@link StageDriver}
-     * for each stage and using that driver to request that the stage finish
-     * execution. The {@link StageDriver#finish(Stage)}
-     * method will block until the stage's queue is exhausted, so this method
-     * may be used to safely finalize all stages without the risk of
-     * losing data in the queues.
-     *
-     * @throws InterruptedException if a worker thread was interrupted at the time
-     * a stage was asked to finish execution.
-     */
-    public void finish() throws StageException {
-        for (Stage stage: this.stages){
-            StageDriver driver = stage.getStageDriver();
-            driver.finish(stage);
-        }
-        
-        for (Pipeline pipeline : branches.values()) {
-            pipeline.finish();
-        }
+    public PipelineValidator getValidator() {
+        return this.validator;
     }
     
     /**
-     * Enqueues an object on the first stage if the pipeline is not empty
-     * @param o the object to enque
+     * Sets the validator used to validate the pipeline as it is contstructed.
+     * Setting the validator to null disables validation
+     * @param validator Validator used to validate pipeline structure.
      */
-    public void enqueue(Object o){
-        if (!stages.isEmpty()) stages.get(0).enqueue(o);
-    }
-    
-    /**
-     * This method is used by stages to pass data from one stage to the next.
-     */
-    public void pass(Stage source, Object data) {
-        Stage next = this.getNextStage(source);
-        if (next != null) next.enqueue(data);
-    }
-    
-    /**
-     * Simple method that recursively checks whether the specified
-     * pipeline is a branch of this pipeline.
-     */
-    private boolean hasBranch(Pipeline pipeline) {
-        if (branches.containsValue(pipeline)) return true;
-        for (Pipeline branch : branches.values()) {
-            if (branch.hasBranch(pipeline)) return true;
-        }
-        
-        return false;
-    }
-    
-    /**
-     * Adds an EventListener to the pipline that will be notified by calls
-     * to {@link Stage#raise(StageEvent)}.
-     */
-    public void addEventListener(StageEventListener listener) {
-        listeners.add(listener);
-    }
-    
-    /**
-     * Sequentially notifies each listener in the list of an event, and propagates
-     * the event to any attached branches
-     */
-    public void notifyListeners(final java.util.EventObject ev) {
-        new Thread() {
-            public void run() {
-                for (Iterator iter = listeners.iterator(); iter.hasNext();) {
-                    ((StageEventListener) iter.next()).notify(ev);
-                }
-                
-                for (Iterator iter = branches.values().iterator(); iter.hasNext();) {
-                    ((Pipeline) iter.next()).notifyListeners(ev);
-                }
-            }
-        }.start();
+    public void setValidator(PipelineValidator validator) {
+        this.validator = validator;
     }
 }

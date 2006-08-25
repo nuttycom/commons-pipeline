@@ -22,42 +22,29 @@
 <log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
 
     <appender name="log_app" class="org.apache.log4j.FileAppender">
-        <param name="File"   value="target/test-reports/pipeline.log" />
-        <param name="Append" value="false" />	    	
-        <layout class="org.apache.log4j.PatternLayout">
-            <param name="ConversionPattern" value="%t %-5p %c{2} - %m%n"/>
-        </layout>	    
-    </appender>
-
-    <appender name="impl_app" class="org.apache.log4j.FileAppender">
-        <param name="File"   value="target/test-reports/impl.log" />
-        <param name="Append" value="false" />	    	
+        <param name="File"   value="${log.directory}/pipeline.log" />
+        <param name="Append" value="true" />	    	
         <layout class="org.apache.log4j.PatternLayout">
             <param name="ConversionPattern" value="%t %-5p %c{2} - %m%n"/>
         </layout>	    
     </appender>
 
     <appender name="external_app" class="org.apache.log4j.FileAppender">
-        <param name="File"   value="target/test-reports/external.log" />
-        <param name="Append" value="false" />	    	
+        <param name="File"   value="${log.directory}/external.log" />
+        <param name="Append" value="true" />	    	
         <layout class="org.apache.log4j.PatternLayout">
             <param name="ConversionPattern" value="%t %-5p %c{2} - %m%n"/>
         </layout>	    
     </appender>
 
     <category name="org.apache.commons.digester" additivity="false">
-      <level value="info" />
+      <level value="debug" />
       <appender-ref ref="external_app" />
     </category>
 
     <category name="org.apache.commons.beanutils" additivity="false">
       <level value="info" />
       <appender-ref ref="external_app" />
-    </category>
-
-    <category name="org.apache.commons.pipeline.stage" additivity="false">
-      <level value="debug" />
-      <appender-ref ref="impl_app" />
     </category>
 
     <root>

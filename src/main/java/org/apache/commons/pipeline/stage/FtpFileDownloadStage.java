@@ -31,7 +31,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
-import org.apache.commons.pipeline.BaseStage;
+import org.apache.commons.pipeline.stage.BaseStage;
 import org.apache.commons.pipeline.StageException;
 
 /**
@@ -72,26 +72,11 @@ public class FtpFileDownloadStage extends BaseStage {
     }
     
     /**
-     * Default constructor - creates work directory in /tmp
-     */
-    public FtpFileDownloadStage(Queue<Object>  queue) {
-        super(queue);
-    }
-    
-    /**
-     * Creates a new instance of HttpFileDownload with the specified work directory
-     * into which to download files.
-     */
-    public FtpFileDownloadStage(Queue<Object> queue, String workDir) {
-        super(queue);
-        this.workDir = workDir;
-    }
-    
-    /**
      * Creates the download directory {@link #setWorkDir(String) workDir} uf it does
      * not exist.
      */
     public void preprocess() throws StageException {
+        super.preprocess();
         if (fworkDir == null) fworkDir = new File(workDir);
         if (!this.fworkDir.exists()) fworkDir.mkdirs();
         
@@ -106,7 +91,7 @@ public class FtpFileDownloadStage extends BaseStage {
             client.login(user, password);
             log.debug(client.getReplyString());
             if(!FTPReply.isPositiveCompletion(client.getReplyCode())) {
-                throw new IOException("FTP login failed for user " + user + ": " + client.getReplyString());
+                throw new StageException("FTP login failed for user " + user + ": " + client.getReplyString());
             }
         } catch (IOException e) {
             throw new StageException(e.getMessage(), e);
@@ -185,7 +170,7 @@ public class FtpFileDownloadStage extends BaseStage {
                     }
                 }
                 
-                this.exqueue(localFile);
+                this.emit(localFile);
             }
         }
     }

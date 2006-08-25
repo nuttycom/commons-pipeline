@@ -32,7 +32,7 @@ import java.util.Queue;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.pipeline.StageException;
-import org.apache.commons.pipeline.BaseStage;
+import org.apache.commons.pipeline.stage.BaseStage;
 
 
 /**
@@ -52,23 +52,6 @@ public class HttpFileDownloadStage extends BaseStage {
      * @deprecated Let File.createTempFile take care of the working directory issue.
      */
     public HttpFileDownloadStage(String workDir) {
-        this.workDir = workDir;
-    }
-    
-    /**
-     * Default constructor - creates work directory in /tmp
-     */
-    public HttpFileDownloadStage(Queue<Object> queue) {
-        super(queue);
-    }
-    
-    /**
-     * Creates a new instance of HttpFileDownload with the specified work directory
-     * into which to download files.
-     * @deprecated Let File.createTempFile take care of the working directory issue.
-     */
-    public HttpFileDownloadStage(Queue<Object> queue, String workDir) {
-        super(queue);
         this.workDir = workDir;
     }
     
@@ -165,7 +148,7 @@ public class HttpFileDownloadStage extends BaseStage {
             con.disconnect();
         }
         
-        this.exqueue(workFile);
+        this.emit(workFile);
     }
     
     

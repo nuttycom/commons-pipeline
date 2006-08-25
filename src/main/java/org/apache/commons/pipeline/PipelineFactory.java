@@ -19,12 +19,15 @@ package org.apache.commons.pipeline;
 import java.util.Map;
 
 /**
- * Simple factory interface for creating pipelines.
+ * Simple factory interface for creating pipelines. This interface is commonly implemented
+ * in different ways to allow creation of a pipeline based upon some external
+ * configuration source instead of in code.
  */
 public interface PipelineFactory {
-    /** Returns a Pipeline created by the factory. */
+    /**
+     * Returns a Pipeline created by the factory.
+     * @throws org.apache.commons.pipeline.PipelineCreationException if there is an error creating the pipeline
+     * @return the newly created pipeline
+     */
     public Pipeline createPipeline() throws PipelineCreationException;
-    
-    /** Configure the factory */
-    public void configure(Map<String,?> context);
 }

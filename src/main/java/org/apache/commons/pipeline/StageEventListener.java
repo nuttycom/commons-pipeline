@@ -20,12 +20,15 @@ import java.util.EventListener;
 import java.util.EventObject;
 
 /**
- * Listener interface for {@link StageEvent}s
+ * Listener interface for {@link EventObject}s. Listeners are notified of
+ * events by the {@link StageContext} with which they are registered.
  */
 public interface StageEventListener extends EventListener {
     
     /**
      * Notify this listener of a {@link StageEvent}
+     * @param ev The event to be handled. Listeners should gracefully ignore any events that they
+     * do not know how to handle.
      */
     public abstract void notify(EventObject ev);
 }

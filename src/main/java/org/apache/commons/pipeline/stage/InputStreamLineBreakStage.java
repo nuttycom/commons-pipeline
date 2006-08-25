@@ -20,7 +20,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import org.apache.commons.pipeline.BaseStage;
+import org.apache.commons.pipeline.stage.BaseStage;
 import org.apache.commons.pipeline.StageException;
 
 /**
@@ -50,7 +50,7 @@ public class InputStreamLineBreakStage extends BaseStage {
             String line = buffered.readLine();
             while (line != null){
                 if (!(ignoringBlankLines && line.trim().equals(""))) {
-                    this.exqueue(line);
+                    this.emit(line);
                 }
                 line = buffered.readLine();
             }

@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<faqs id="General FAQ">
+  <part id="General">
+    <faq id="how">
+      <question>How do I get started with the Pipeline?</question>
+      <answer>
+        <p>
+          First, you'll need to write an implementation of the 
+          <a href="./apidocs/org/apache/commons/pipeline/Stage.html">Stage</a>
+          interface to do something interesting. Then, create a 
+          <a href="./config_digester.html">configuration file</a> for the
+          pipeline you want to run. Finally, you can use the 
+          <a href="./apidocs/org/apache/commons/pipeline/config/DigesterPipelineFactory.html">DigesterPipelineFactory</a>
+          to create and run the pipeline! 
+        </p>
+      </answer>
+    </faq>
+  </part>
+</faqs>

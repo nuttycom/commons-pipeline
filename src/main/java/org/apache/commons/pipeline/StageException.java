@@ -32,7 +32,7 @@ public class StageException extends java.lang.Exception {
     
     /**
      * Constructs an instance of <code>StageException</code> with the specified detail message.
-     * @param msg the detail message.
+     * @param msg the detail message for the error that occurred.
      */
     public StageException(String msg) {
         super(msg);
@@ -40,7 +40,7 @@ public class StageException extends java.lang.Exception {
     
     /**
      * Constructs an instance of <code>StageException</code> with the specified cause.
-     * @param msg the detail message.
+     * @param thr The underlying exception that caused this exception to be thrown.
      */
     public StageException(Throwable thr) {
         super(thr);
@@ -60,6 +60,7 @@ public class StageException extends java.lang.Exception {
     
     /**
      * Creates a new instance of <code>StageException</code> without detail message.
+     * @param source the stage that was the source of the exception
      */
     public StageException(Stage source) {
         this.source = source;
@@ -68,6 +69,7 @@ public class StageException extends java.lang.Exception {
     
     /**
      * Constructs an instance of <code>StageException</code> with the specified detail message.
+     * @param source the stage that was the source of the exception
      * @param msg the detail message.
      */
     public StageException(Stage source, String msg) {
@@ -78,6 +80,7 @@ public class StageException extends java.lang.Exception {
     
     /**
      * Constructs an instance of <code>StageException</code> with the specified detail message and cause
+     * @param source the stage where the error occurred
      * @param msg the detail message.
      * @param cause Throwable that caused this exception.
      */
@@ -89,6 +92,7 @@ public class StageException extends java.lang.Exception {
     
     /**
      * Returns a reference to the Stage object where the exception occurred.
+     * @return a reference to the Stage object where the exception occurred.
      */
     public Stage getSource() {
         return this.source;

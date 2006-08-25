@@ -17,7 +17,7 @@
 package org.apache.commons.pipeline.stage;
 
 import org.apache.commons.pipeline.StageException;
-import org.apache.commons.pipeline.BaseStage;
+import org.apache.commons.pipeline.stage.BaseStage;
 import java.util.Queue;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -29,7 +29,7 @@ import org.apache.commons.logging.LogFactory;
  * Useful for debugging purposes. 
  */
 public class LogStage extends BaseStage {
-    private final Log log = LogFactory.getLog(LogStage.class);
+    private Log log = LogFactory.getLog(LogStage.class);
     
     /**
      * Creates a new LogStage.
@@ -38,16 +38,10 @@ public class LogStage extends BaseStage {
     }
     
     /**
-     * Creates a new LogStage with the specified {@link StageQueue}.
-     */
-    public LogStage(Queue<Object> queue) {
-        super(queue);
-    }
-    
-    /**
      * Logs the point at which preprocessing runs.
      */
     public void preprocess() throws StageException {
+        super.preprocess();
         log.info("Stage " + this.getClass().getName() + " preprocessing.");
     }
     
@@ -57,7 +51,7 @@ public class LogStage extends BaseStage {
      */
     public void process(Object obj) throws StageException {
         log.info("Processing object " + obj);
-        this.exqueue(obj);
+        this.emit(obj);
     }
         
     /**
@@ -75,9 +69,23 @@ public class LogStage extends BaseStage {
     }
 
     /**
-     * Default toString implementation.
+     * Sets the logger.
      */
-    public String toString() {
-        return this.getClass().getName();
+    public synchronized void setLog(Log log) {
+        this.log = log;
+    }
+    
+    /**
+     * Sets the logger based upon the log name.
+     */
+    public synchronized void setLog(String logName) {
+        this.log = LogFactory.getLog(logName);
+    }
+    
+    /**
+     * Sets the logger based upon the specified class.
+     */
+    public synchronized void setLog(Class clazz) {
+        this.log = LogFactory.getLog(clazz);
     }
 }

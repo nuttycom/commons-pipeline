@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Queue;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.commons.pipeline.BaseStage;
+import org.apache.commons.pipeline.stage.BaseStage;
 import org.apache.commons.pipeline.StageException;
 
 /**
@@ -38,11 +38,6 @@ public class URLToInputStreamStage extends BaseStage {
     
     /** Creates a new instance of URLToInputStreamStage */
     public URLToInputStreamStage() {    }
-    
-    /** Creates a new instance of URLToInputStreamStage */
-    public URLToInputStreamStage(Queue<Object> queue) {
-        super(queue);
-    }    
     
     /** 
      * Takes a String or a URL object representing a URL and exqueues the input 
@@ -67,7 +62,7 @@ public class URLToInputStreamStage extends BaseStage {
             InputStream inputStream = url.openStream();
             this.inputStreams.add(inputStream);
             log.info("enqueing input stream");
-            this.exqueue(inputStream);
+            this.emit(inputStream);
         } catch (IOException e){
             throw new StageException("Error with stream from url:" + url,e);
         }

@@ -19,16 +19,18 @@
 -->
 
 <pipeline>
+  <listener className="org.apache.commons.pipeline.listener.ObjectProcessedEventCounter"/>
+  <driverFactory className="org.apache.commons.pipeline.driver.DedicatedThreadStageDriverFactory" id="f1"/>
 
-  <stage className="org.apache.commons.pipeline.stage.FileFinderStage" filePattern=".*\.java">
-    <stageDriver className="org.apache.commons.pipeline.driver.SingleThreadStageDriver"/>
-    <enqueue>
-      <value>src/java</value>
-    </enqueue>
-  </stage>
+  <stage className="org.apache.commons.pipeline.stage.FileFinderStage" driverFactoryId="f1"
+         filePattern=".*\.java" />
 
-  <stage className="org.apache.commons.pipeline.stage.LogStage">
-    <stageDriver className="org.apache.commons.pipeline.driver.SingleThreadStageDriver"/>
-  </stage>
+  <stage className="org.apache.commons.pipeline.stage.LogStage" driverFactoryId="f1" />
                    
+  <stage className="org.apache.commons.pipeline.stage.RaiseEventStage" driverFactoryId="f1" />
+  
+  <feed>
+    <value>src/main/java</value>
+    <value>src/test/java</value>
+  </feed>
 </pipeline>

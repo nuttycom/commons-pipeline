@@ -16,31 +16,17 @@
 
 package org.apache.commons.pipeline.stage;
 
-import java.util.ArrayList;
 import junit.framework.*;
-import org.apache.commons.pipeline.Pipeline;
-import org.apache.commons.pipeline.driver.SingleThreadStageDriver;
+import org.apache.commons.pipeline.testFramework.TestFeeder;
+import org.apache.commons.pipeline.testFramework.TestStageContext;
 
 /**
  * Test cases for DynamicLookupStaticMethodStage.
  */
-public class DynamicLookupStaticMethodStageTest extends TestCase {
-    
-    Pipeline pipe;
-    ArrayList list;
-    AddToCollectionStage collectionStage;
+public class DynamicLookupStaticMethodStageTest extends AbstractStageTest {
     
     public DynamicLookupStaticMethodStageTest(String testName) {
         super(testName);
-    }
-
-    protected void setUp() throws Exception {
-        pipe = new Pipeline();
-        list = new ArrayList();
-        collectionStage = new AddToCollectionStage(list, false);
-    }
-
-    protected void tearDown() throws Exception {
     }
 
     public static Test suite() {
@@ -50,48 +36,60 @@ public class DynamicLookupStaticMethodStageTest extends TestCase {
     }
 
     /**
-     * Test of newInstance method, of class org.apache.commons.pipeline.stage.DynamicLookupStaticMethodStage.
-     */
-    public void testNewInstance() throws Exception {
-        DynamicLookupStaticMethodStage stage = DynamicLookupStaticMethodStage.newInstance("java.lang.Integer", "toString");
-        assertEquals("toString",stage.getMethodName());
-        assertSame(Integer.class, stage.getMethodClass());
-    }
-
-    /**
      * Test of process method, of class org.apache.commons.pipeline.stage.DynamicLookupStaticMethodStage.
      */
     public void testProcess() throws Exception {
-        DynamicLookupStaticMethodStage methodStage = new DynamicLookupStaticMethodStage(this.getClass(),"runMethod");
-        pipe.addStage(methodStage, new SingleThreadStageDriver());
-        pipe.addStage(collectionStage, new SingleThreadStageDriver());
-        pipe.start();
-        pipe.enqueue("A String");
-        pipe.finish();
-        assertEquals(1,list.size());
-        Object object = list.remove(0);
-        assertNotNull(object);
-        assertTrue(object instanceof String);
-        assertEquals("Ran String Method",object.toString());
+        //create the stage instance for test
+        DynamicLookupStaticMethodStage stage = new DynamicLookupStaticMethodStage(this.getClass(),"runMethod");
         
+        //initialize the testing context
+        this.init(stage);
         
-        pipe.start();
-        pipe.enqueue(new Integer(5));
-        pipe.finish();
-        assertEquals(1,list.size());
-        object = list.remove(0);
-        assertTrue(object instanceof String);
-        assertEquals("Ran Integer Method",object.toString());
+        stage.process("A String");
+        
+        assertEquals("Incorrect number of objects received downstream", 1, testFeeder.receivedValues.size());
+        assertNotNull("Unexpected null value received downstream.", testFeeder.receivedValues.get(0));
+        assertTrue("Object received downstream is of class: " + testFeeder.receivedValues.get(0).getClass(), 
+                testFeeder.receivedValues.get(0) instanceof String);
+        assertEquals("Incorrect value received downstream", "Ran String Method", testFeeder.receivedValues.get(0));        
+    
+        stage.process(5);
+    
+        assertEquals("Incorrect number of objects received downstream", 2, testFeeder.receivedValues.size());
+        assertNotNull("Unexpected null value received downstream.", testFeeder.receivedValues.get(1));
+        assertTrue("Object received downstream is of class: " + testFeeder.receivedValues.get(1).getClass(), 
+                testFeeder.receivedValues.get(1) instanceof String);
+        assertEquals("Incorrect value received downstream", "Ran Integer Method", testFeeder.receivedValues.get(1));        
+        
+        Object[] args = {"Hello, World!", 5};
+        
+        stage.process(args);
+        
+        assertEquals("Incorrect number of objects received downstream", 3, testFeeder.receivedValues.size());
+        assertNotNull("Unexpected null value received downstream.", testFeeder.receivedValues.get(2));
+        assertTrue("Object received downstream is of class: " + testFeeder.receivedValues.get(2).getClass(), 
+                testFeeder.receivedValues.get(2) instanceof String);
+        assertEquals("Incorrect value received downstream", "Ran multiple-argument method", testFeeder.receivedValues.get(2));                
     }
     
-    
+    /**
+     * Sample string-argument method for test
+     */
     public static String runMethod(String object){
         return "Ran String Method";
     }
     
+    /**
+     * Sample integer-argument method for test
+     */
     public static String runMethod(Integer integer){
         return "Ran Integer Method";
     }
     
-    
+    /**
+     * Sample multiple-argument method for test
+     */
+    public static String runMethod(String arg1, Integer arg2) {
+        return "Ran multiple-argument method";
+    }
 }

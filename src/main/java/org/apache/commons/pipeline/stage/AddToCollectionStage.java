@@ -18,12 +18,19 @@ package org.apache.commons.pipeline.stage;
 
 import java.util.Collection;
 import java.util.Collections;
-import org.apache.commons.pipeline.BaseStage;
+import org.apache.commons.pipeline.validation.ConsumedTypes;
+import org.apache.commons.pipeline.validation.ProducesConsumed;
 
 /**
- * This is a simple stage in the pipeline which will add the object to the
- * specified collection.
+ * This is a simple stage in the pipeline which will add each processed object 
+ * to the specified collection. 
+ *
+ * For the purposes of validation, this stage is considered to be able to consume
+ * objects of any class although the process() method may throw a ClassCastException
+ * if a processed object cannot be added to the collection.
  */
+@ConsumedTypes(Object.class)
+@ProducesConsumed
 public class AddToCollectionStage<T> extends BaseStage {
     
     /**
@@ -61,7 +68,14 @@ public class AddToCollectionStage<T> extends BaseStage {
      */
     public void process(Object obj) throws org.apache.commons.pipeline.StageException {
         this.collection.add((T) obj);
-        this.exqueue(obj);
+        this.emit(obj);
     }
     
+    /**
+     * Returns the collection to which elements have been added during
+     * processing.
+     */
+    public Collection<T> getCollection() {
+        return this.collection;
+    }    
 }

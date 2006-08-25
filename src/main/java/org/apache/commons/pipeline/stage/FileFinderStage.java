@@ -18,10 +18,11 @@ package org.apache.commons.pipeline.stage;
 
 import java.io.File;
 import java.util.regex.Pattern;
-import java.util.Queue;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.commons.pipeline.BaseStage;
+import org.apache.commons.pipeline.StageException;
+import org.apache.commons.pipeline.validation.ConsumedTypes;
+import org.apache.commons.pipeline.validation.ProducedTypes;
 
 /**
  * <p>This {@link org.apache.commons.pipeline.Pipeline$Stage Stage} is used
@@ -30,6 +31,8 @@ import org.apache.commons.pipeline.BaseStage;
  * <p>File elements in the stage's queue will be recursively searched with the
  * resulting File objects placed on the subsequent stage's queue.</p>
  */
+@ConsumedTypes({String.class, File.class})
+@ProducedTypes(File.class)
 public class FileFinderStage extends BaseStage {
     private final Log log = LogFactory.getLog(FileFinderStage.class);
     private String filePattern = ".*";
@@ -38,18 +41,13 @@ public class FileFinderStage extends BaseStage {
     /** Creates a new instance of FileFinder */
     public FileFinderStage() { }
     
-    /** Creates a new instance of FileFinder that uses the specified queue. */     
-    public FileFinderStage(Queue<Object> queue) {
-        super(queue);
-    }
-    
     /**
      * Precompiles the regex pattern for matching against filenames
      */
-    public void preprocess() {
+    public void preprocess() throws StageException {
+        super.preprocess();
         this.pattern = Pattern.compile(this.filePattern);
     }
-    
     
     /**
      * This method inspects a File object to determine if
@@ -63,21 +61,17 @@ public class FileFinderStage extends BaseStage {
         log.debug("Examining file " + file.getAbsolutePath());
         
         if (!file.exists()) {
-            log.debug("File does not exist.");
-        }
-        else if (file.isDirectory()) {
+            log.info("File " + file + " does not exist.");
+        } else if (file.isDirectory()) {
             File[] files = file.listFiles();
             log.debug(file.getName() + " is a directory, processing " + files.length + " files within.");
             for (int i = 0; i < files.length; i++) {
                 process(files[i]);
             }
+        } else if (this.pattern.matcher(file.getName()).matches()){
+            this.emit(file);
         }
-        else if (this.pattern.matcher(file.getName()).matches()){
-            this.exqueue(file);
-            log.debug("Enqueueing file: " + file.getName());
         }
-    }    
-    
     
     /** Getter for property filePattern.
      * @return Value of property filePattern.
@@ -86,7 +80,6 @@ public class FileFinderStage extends BaseStage {
     public String getFilePattern() {
         return this.filePattern;
     }
-    
     
     /** Setter for property filePattern.
      * @param pattern Value of property filePattern.

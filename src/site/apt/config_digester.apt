@@ -1,0 +1,128 @@
+                    -----------------------------
+                    Commons-Pipeline and Digester
+                    -----------------------------
+
+Using Commons-Pipeline with Digester
+
+  A simple and straightforward way of creating a pipeline is to use an XML 
+configuration file. Commons-Pipeline provides a set of Digester rules that can 
+be used to set up a pipeline based upon such a file.
+
+  One important thing to note is that, due to the way that Digester handles 
+the mapping of XML attributes to object properties, it is not possible to 
+define a comprehensive DTD that fully describes the XML syntax for all possible
+legal configuration files; however, this does not prove to be a significant
+limitation and the flexibility that it provides outweighs the disadvantages
+of the limited possibility for validation.
+
+Basic XML Structure
+
++---+
+<pipeline>
+  <branch>
+    <pipeline>...</pipeline>
+  </branch>
+  <listener/>
+  <driverFactory/>
+  <stage></stage>
+  <feed>
+    <value/>
+    <object/>
+  </feed>
+</pipeline>
++---+
+
+  Attributes for each element are discussed in their respective subsections.
+
+* \<pipeline/\>
+
+  The \<pipeline/\> element is the root element of the document. It is used to
+define primary pipeline that will be created. The root \<pipeline\> tag does not
+support any attributes by default; instances of the tag nested within \<branch\>
+tags support the following attributes:
+
+  [configUri] The URI of the configuration file to digest to create the branch 
+              pipeline. Currently, only absolute URIs are supported (either 
+              http:// or file://). Only used when the \<pipeline\> element is
+              nested within a \<branch\> tag; required in this case.
+
+  [key]       The key used to refer to the pipeline branch. Only used when the 
+              \<pipeline\> element is nested within a \<branch\> tag; required 
+              in this case.
+
+* \<branch/\>
+
+  This tag is used to add a branch to a pipeline. The contents of this tag 
+should be one or more \<pipeline\> declarations. Branch pipelines added in this 
+fashion must be configured with an attribute named <<<key>>> that specifies the 
+name used to refer to the branch.
+
+  Branch pipelines may be configured either inline in the main configuration
+file or in a separate file referred to by the <<<configURI>>> pipeline
+attribute.
+
+* \<listener className="" ... /\>
+
+  The \<listener\> element is used to register a StageEventListener with the
+pipeline. This element supports any number of attributes, with the 
+<<<className>>> attribute being reserved to define the class of the registered 
+listener. All other attributes are mapped to properties that are set on the 
+created listener object, using standard Java bean naming conventions.
+  
+  [className] The class of the listener object to be created and registered
+              with the pipeline. Required.
+
+* \<driverFactory className="" id="" .../\>
+
+  The \<driverFactory\> element is used to create and configure a 
+StageDriverFactory that will be used to create StageDriver instances for stages
+in the parent pipeline. Each StageDriverFactory is identified by a unique
+string identifier that is used by the \<stage\> tag to identify the factory used 
+to create the driver for the stage. This tag supports two attributes, <<<id>>>
+and <<<className>>>. All other attributes are mapped to properties that are set 
+on the created factory, using standard Java bean naming conventions.
+ 
+  [className] The class of the factory, which must supply a no-argument 
+              constructor.
+
+  [id]        The identifier used by the <<<driverFactoryId>>> attribute of the
+              \<stage\> tag to refer to this factory.
+
+* \<stage className="" driverFactoryId="" ... \>\</stage\>
+
+  A single stage is created, configured, and added to the parent pipeline using 
+this tag. Stages created in this manner are added to the pipeline in the order 
+that they occur in the configuration file. This tag supports two attributes, 
+<<<className>>> and <<<driverFactoryId>>>. All other attributes are mapped to 
+properties that are set on the created factory, using standard Java bean naming 
+conventions.
+
+  [className]       The class of the stage, which must supply a no-argument 
+                    constructor.
+
+  [driverFactoryId] Each stage should refer to a previously declared driver 
+                    factory identifier. The referenced factory will be used to
+                    create the driver for the stage.
+
+* \<feed\>\</feed>
+
+  This tag is used to specify a collection of objects that will be fed into the
+pipeline on startup. Two different modes of usage are supported: string mode
+and object mode. Use the \<value\> tag to feed string values into the pipeline;
+use the \<object\> tag to feed more complex objects.
+
+** \<value\>
+
+  This tag supports no attributes. A java.lang.String object representing the 
+body content of the tag will be fed to the first stage in the pipeline.
+
+** \<object\>
+
+  This tag is used to feed arbitrary objects into the pipeline. It supports
+a single attribute, <<<className>>>.  All other attributes are mapped to 
+properties that are set on the created factory, using standard Java bean naming 
+conventions.
+
+  [className] The class of the object to be created, which must supply a 
+              no-argument constructor.
+

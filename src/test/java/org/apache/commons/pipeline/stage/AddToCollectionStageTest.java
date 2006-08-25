@@ -17,33 +17,18 @@
 package org.apache.commons.pipeline.stage;
 
 import java.util.ArrayList;
+import java.util.List;
 import junit.framework.*;
-import org.apache.commons.pipeline.Pipeline;
-import org.apache.commons.pipeline.stage.AddToCollectionStage;
-import org.apache.commons.pipeline.driver.SingleThreadStageDriver;
-
+import org.apache.commons.pipeline.testFramework.TestFeeder;
+import org.apache.commons.pipeline.testFramework.TestStageContext;
 
 /**
  * Test cases for AddToCollectionStage
  */
-public class AddToCollectionStageTest extends TestCase {
-    
-        Pipeline pipeline;
-        ArrayList list;
+public class AddToCollectionStageTest extends AbstractStageTest {
     
     public AddToCollectionStageTest(String testName) {
         super(testName);
-    }
-
-    protected void setUp() throws Exception {
-        pipeline = new Pipeline();
-        list = new ArrayList();
-        AddToCollectionStage stage = new AddToCollectionStage(list);
-        pipeline.addStage(stage, new SingleThreadStageDriver());
-        pipeline.start();
-    }
-
-    protected void tearDown() throws Exception {
     }
 
     public static Test suite() {
@@ -56,12 +41,19 @@ public class AddToCollectionStageTest extends TestCase {
      * Test of process method, of class org.apache.commons.pipeline.stage.AddToCollectionStage.
      */
     public void testProcess() throws Exception {
-        Object o = new Object();
-        pipeline.enqueue(o);
-        pipeline.finish();
-        assertEquals(1,list.size());
-        Object pipedO = list.get(0);
-        assertSame(o,pipedO);
+        //create the stage instance
+        List<String> testCollection = new ArrayList<String>();
+        AddToCollectionStage<String> stage = new AddToCollectionStage<String>(testCollection, true);
+        
+        //initialize the testing context
+        this.init(stage);
+        
+        //run the process() method
+        stage.process("Hello, World!");
+        
+        assertEquals("Incorrect number of objects in collection", 1, testCollection.size());
+        assertEquals("Incorrect object stored in collection", "Hello, World!", testCollection.get(0));       
+        assertEquals("Incorrect number of objects received downstream", 1, testFeeder.receivedValues.size());
+        assertEquals("Incorrect value received downstream", "Hello, World!", testFeeder.receivedValues.get(0));
     }
-    
 }

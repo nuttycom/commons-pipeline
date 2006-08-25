@@ -20,11 +20,9 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
 import junit.framework.*;
-import org.apache.commons.pipeline.Pipeline;
-import org.apache.commons.pipeline.Stage;
+import org.apache.commons.pipeline.testFramework.TestFeeder;
+import org.apache.commons.pipeline.testFramework.TestStageContext;
 
 
 /**
@@ -32,28 +30,19 @@ import org.apache.commons.pipeline.Stage;
  */
 public class HttpFileDownloadStageTest extends TestCase {
     
-    Pipeline pipeline;
-    List results;
-    URL fileUrl;
-    URL google;
-    
+    private URL google;
+    private URL fileUrl;
     
     public HttpFileDownloadStageTest(String testName) {
         super(testName);
     }
     
     protected void setUp() throws Exception {
-        results = new ArrayList();
-        ArrayList<Stage> stages = new ArrayList<Stage>();
-        stages.add(new HttpFileDownloadStage());
-        stages.add(new AddToCollectionStage(results));
+        super.setUp();
+        this.google = new URL("http://www.google.com");
         this.fileUrl = this.getClass().getClassLoader().getResource("http-download.txt");
-        assertNotNull(fileUrl);
-        google = new URL("http://www.google.com");
-        pipeline = new Pipeline(stages);
-    }
     
-    protected void tearDown() throws Exception {
+        assertNotNull(fileUrl);
     }
     
     public static Test suite() {
@@ -63,67 +52,65 @@ public class HttpFileDownloadStageTest extends TestCase {
     }
     
     /**
-     * Test of process method, of class org.apache.commons.pipeline.stage.HttpFileDownloadStage.
-     */
-//    public void testFileUrlStringProcess() throws Exception {
-//        pipeline.start();
-//        pipeline.enqueue(this.fileUrl.toExternalForm());
-//        pipeline.finish();
-//        assertEquals(1,results.size());
-//        Object o = results.get(0);
-//        assertNotNull(o);
-//        assertTrue(o instanceof File);
-//        File file = (File) o;
-//        
-//        FileReader rf = new FileReader(file);
-//        BufferedReader br = new BufferedReader(rf);
-//        try {
-//            String line = br.readLine();
-//            assertNotNull(line);
-//            assertEquals("This is a test file.",line);
-//        } finally {
-//            rf.close();
-//            br.close();
-//        }
-//        
-//        
-//    }
-//    
-//    /**
-//     * Test of setWorkDir method, of class org.apache.commons.pipeline.stage.HttpFileDownloadStage.
-//     */
-//    public void testFileUrlProcess() throws Exception {
-//        pipeline.start();
-//        pipeline.enqueue(this.fileUrl);
-//        pipeline.finish();
-//        assertEquals(1,results.size());
-//        Object o = results.get(0);
-//        assertNotNull(o);
-//        assertTrue(o instanceof File);
-//        File file = (File) o;
-//        
-//        FileReader rf = new FileReader(file);
-//        BufferedReader br = new BufferedReader(rf);
-//        try {
-//            String line = br.readLine();
-//            assertNotNull(line);
-//            assertEquals("This is a test file.",line);
-//        } finally {
-//            rf.close();
-//            br.close();
-//        }
-//        
-//    }
-    
-    /**
      * Test of process() method, of class org.apache.commons.pipeline.stage.HttpFileDownloadStage.
      */
-    public void testHttpUrlString() throws Exception {
-        pipeline.start();
-        pipeline.enqueue(this.google.toExternalForm());
-        pipeline.finish();
-        assertEquals(1,results.size());
-        Object o = results.get(0);
+    public void testHttpUrlProcess() throws Exception {
+        this.execTestHttpProcess(this.google);
+        this.execTestHttpProcess(this.google.toExternalForm());
+        //this.execTestFileUrlProcess(this.fileUrl);
+        //this.execTestFileUrlProcess(this.fileUrl.toExternalForm());
+    }
+    
+    /**
+     * Utility method for testing processing of HTTP URLs.
+     */
+    private void execTestHttpProcess(Object arg) throws Exception {
+        HttpFileDownloadStage stage = new HttpFileDownloadStage();
+        
+        //initialize the testing context
+        TestStageContext testContext = new TestStageContext();
+        TestFeeder testFeeder = new TestFeeder();
+        testContext.registerDownstreamFeeder(stage, testFeeder);
+        stage.init(testContext);
+        
+        stage.process(arg);
+        
+        assertEquals(1, testFeeder.receivedValues.size());
+        
+        Object o = testFeeder.receivedValues.get(0);
+        assertNotNull(o);
+        assertTrue(o instanceof File);
+        
+        File file = (File) o;
+        FileReader rf = new FileReader(file);
+        BufferedReader br = new BufferedReader(rf);
+        try {
+            String line = br.readLine();
+            assertNotNull(line);
+            assertTrue("actual line:" + line, line.contains("oogle"));
+        } finally {
+            rf.close();
+            br.close();
+        }
+    }
+    
+    /**
+     * Utility method for testing processing of system/file URLs.
+     */
+    public void execTestFileUrlProcess(Object arg) throws Exception {
+        HttpFileDownloadStage stage = new HttpFileDownloadStage();
+        
+        //initialize the testing context
+        TestStageContext testContext = new TestStageContext();
+        TestFeeder testFeeder = new TestFeeder();
+        testContext.registerDownstreamFeeder(stage, testFeeder);
+        stage.init(testContext);
+        
+        stage.process(arg);
+        
+        assertEquals(1, testFeeder.receivedValues.size());
+        
+        Object o = testFeeder.receivedValues.get(0);
         assertNotNull(o);
         assertTrue(o instanceof File);
         File file = (File) o;
@@ -133,35 +120,12 @@ public class HttpFileDownloadStageTest extends TestCase {
         try {
             String line = br.readLine();
             assertNotNull(line);
-            assertTrue("actual line:" + line,line.contains("oogle"));
+            assertEquals("This is a test file.", line);
         } finally {
             rf.close();
             br.close();
         }
+        
     }
     
-    /**
-     * Test of process() method, of class org.apache.commons.pipeline.stage.HttpFileDownloadStage.
-     */
-    public void testHttpUrl() throws Exception {
-        pipeline.start();
-        pipeline.enqueue(this.google);
-        pipeline.finish();
-        assertEquals(1,results.size());
-        Object o = results.get(0);
-        assertNotNull(o);
-        assertTrue(o instanceof File);
-        File file = (File) o;
-        
-        FileReader rf = new FileReader(file);
-        BufferedReader br = new BufferedReader(rf);
-        try {
-            String line = br.readLine();
-            assertNotNull(line);
-            assertTrue("actual line:" + line,line.contains("oogle"));
-        } finally {
-            rf.close();
-            br.close();
-        }
-    }
 }
