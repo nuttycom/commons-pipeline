@@ -21,7 +21,7 @@ import java.util.List;
 /**
  * This exception is used to indicate that one or more validation errors
  * have occurred during an operation.
- * @author kjn
+ *
  */
 public class ValidationException extends java.lang.Exception {
     private List<ValidationFailure> errors;

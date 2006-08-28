@@ -24,7 +24,7 @@ import org.apache.commons.pipeline.testFramework.TestStageContext;
 /**
  * Simple abstract base class for stage tests.
  *
- * @author kjn
+ *
  */
 public class AbstractStageTest extends AbstractLoggingTestCase {
     

@@ -26,7 +26,7 @@ import org.w3c.dom.Document;
 
 /**
  *
- * @author kjn
+ *
  */
 public abstract class AbstractLoggingTestCase extends TestCase {
     private static volatile boolean initialized = false;

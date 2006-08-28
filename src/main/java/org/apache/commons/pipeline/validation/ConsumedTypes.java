@@ -25,7 +25,7 @@ import java.lang.annotation.Target;
  * This annotation is used to describe what types of objects are consumed
  * by the annotated {@link Stage}
  *
- * @author kjn
+ *
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)

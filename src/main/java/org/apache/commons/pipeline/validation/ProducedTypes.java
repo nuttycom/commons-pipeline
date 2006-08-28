@@ -26,7 +26,7 @@ import java.lang.annotation.Target;
  * If a stage produces the same types of objects that it consumes, it should
  * be annotated with the {@link ProducesConsumed} annotation instead.
  *
- * @author kjn
+ *
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)

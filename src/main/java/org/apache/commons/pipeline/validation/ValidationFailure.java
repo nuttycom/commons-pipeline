@@ -21,7 +21,7 @@ import org.apache.commons.pipeline.*;
 /**
  * This class is used to store a collection of information about a particular 
  * validation failure.
- * @author kjn
+ *
  */
 public class ValidationFailure {
     /**

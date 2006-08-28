@@ -27,7 +27,7 @@ import org.apache.commons.pipeline.StageException;
  * Calls a method on the processed object giving it the arguments specified
  * at the time of object construction.
  *
- * @author tns
+ *
  * @version $Id: InvokeMethodStage.java 3562 2006-08-03 20:54:13Z kjn $
  */
 public class InvokeMethodStage extends BaseStage {

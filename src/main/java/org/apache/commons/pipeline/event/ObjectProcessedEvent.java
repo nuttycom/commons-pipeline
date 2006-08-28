@@ -21,7 +21,7 @@ import org.apache.commons.pipeline.*;
 
 /**
  *
- * @author kjn
+ *
  */
 public class ObjectProcessedEvent extends EventObject {
     private Object data;

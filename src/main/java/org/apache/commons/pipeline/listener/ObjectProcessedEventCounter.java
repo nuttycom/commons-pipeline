@@ -30,7 +30,7 @@ import org.apache.commons.pipeline.event.ObjectProcessedEvent;
  * This listener keeps track of the number of {@link ObjectProcessedEvent}s
  * received from each {@link Stage}
  *
- * @author kjn
+ *
  */
 public class ObjectProcessedEventCounter implements StageEventListener {
     private final Log log = LogFactory.getLog(ObjectProcessedEventCounter.class);

@@ -32,7 +32,7 @@ import java.lang.annotation.Target;
  * This annotation is used in lieu of the {@link Production} annotaion
  * and overrides it if both are present.
  *
- * @author kjn
+ *
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)

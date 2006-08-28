@@ -25,7 +25,7 @@ import java.util.EventObject;
  * ordinarily provide a custom Feeder implementation that integrates receiving
  * objects with its internal stage processing workflow.
  *
- * @author kjn
+ *
  */
 public interface Feeder {
     /**

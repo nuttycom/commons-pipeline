@@ -24,7 +24,7 @@ import org.apache.commons.pipeline.StageDriverFactory;
 /**
  * Factory for SynchronousStageDriver objects.
  *
- * @author kjn
+ *
  */
 public class SynchronousStageDriverFactory implements StageDriverFactory {
     

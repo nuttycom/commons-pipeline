@@ -26,7 +26,7 @@ import static org.apache.commons.pipeline.StageDriver.State.*;
 
 /**
  *
- * @author kjn
+ *
  */
 public class DedicatedThreadStageDriverTest extends AbstractStageDriverTest {
     private Log log;

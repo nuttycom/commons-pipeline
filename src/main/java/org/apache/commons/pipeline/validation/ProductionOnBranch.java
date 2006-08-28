@@ -25,7 +25,7 @@ import java.lang.annotation.Target;
  * This annotation is used to describe the production of a {@link Stage} 
  * for a specific branch pipeline.
  *
- * @author kjn
+ *
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)

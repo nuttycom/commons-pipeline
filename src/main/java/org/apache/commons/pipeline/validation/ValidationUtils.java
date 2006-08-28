@@ -21,7 +21,7 @@ import org.apache.commons.pipeline.Stage;
 
 /**
  * A collection of utility methods used by the validation system.
- * @author kjn
+ *
  */
 public class ValidationUtils {
     

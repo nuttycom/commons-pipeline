@@ -26,7 +26,7 @@ import org.apache.commons.pipeline.StageDriverFactory;
 /**
  * This factory is used to create DedicatedThreadStageDriver instances configured
  * to run specific stages.
- * @author kjn
+ *
  */
 public class DedicatedThreadStageDriverFactory implements StageDriverFactory {
     

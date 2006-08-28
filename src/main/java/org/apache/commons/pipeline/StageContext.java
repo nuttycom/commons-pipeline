@@ -25,7 +25,7 @@ import java.util.EventObject;
  * however, this interface is also useful for creating isolated test environments
  * in which a stage can be run.
  *
- * @author kjn
+ *
  */
 public interface StageContext {
     /**

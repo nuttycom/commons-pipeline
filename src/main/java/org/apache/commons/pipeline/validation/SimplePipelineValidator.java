@@ -29,7 +29,7 @@ import org.apache.commons.pipeline.StageDriverFactory;
  * that checks stage and branch connectivity. It assumes that any un-annotated
  * stage simply passes data through and can accept any type of object (as though
  * it were annotated with @ConsumedTypes({Object.class}) and @ProducesConsumed.
- * @author kjn
+ *
  */
 public class SimplePipelineValidator implements PipelineValidator {
     

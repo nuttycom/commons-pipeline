@@ -21,7 +21,7 @@ package org.apache.commons.pipeline;
  * a driver for a {@link Stage} when that stage is added to the pipeline. The factory
  * pattern is used here to ensure that each stage is run by a unique driver
  * instance.
- * @author kjn
+ *
  */
 public interface StageDriverFactory {
     /**

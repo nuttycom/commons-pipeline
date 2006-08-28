@@ -18,7 +18,7 @@ package org.apache.commons.pipeline.server;
 
 /**
  *
- * @author kjn
+ *
  */
 public class PipelineService extends Thread {
     

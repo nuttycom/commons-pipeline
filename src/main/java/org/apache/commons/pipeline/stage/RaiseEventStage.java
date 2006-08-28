@@ -21,7 +21,7 @@ import org.apache.commons.pipeline.event.ObjectProcessedEvent;
 
 /**
  *
- * @author kjn
+ *
  */
 public class RaiseEventStage extends BaseStage {
     

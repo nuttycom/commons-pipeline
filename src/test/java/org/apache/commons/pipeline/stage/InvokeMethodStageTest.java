@@ -23,7 +23,7 @@ import java.util.ArrayList;
 
 /**
  *
- * @author tns
+ *
  */
 public class InvokeMethodStageTest extends AbstractStageTest {
     

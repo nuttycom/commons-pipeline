@@ -25,7 +25,7 @@ import org.apache.commons.pipeline.StageDriverFactory;
  * This interface is used as the basis for validation strategies that may be
  * used to check the validity of a pipeline under construction.
  *
- * @author kjn
+ *
  */
 public interface PipelineValidator {
     /**

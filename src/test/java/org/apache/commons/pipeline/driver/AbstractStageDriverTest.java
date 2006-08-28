@@ -25,7 +25,7 @@ import org.apache.commons.pipeline.testFramework.TestStageContext;
 /**
  * Abstract base class for stage driver tests.
  *
- * @author kjn
+ *
  */
 public abstract class AbstractStageDriverTest extends AbstractLoggingTestCase {
     protected TestStage stage;

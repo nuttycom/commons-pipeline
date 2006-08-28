@@ -25,7 +25,7 @@ import java.lang.annotation.Target;
  * This annotation is used to aggregate information about the branches
  * served by a give Stage.
  *
- * @author kjn
+ *
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)

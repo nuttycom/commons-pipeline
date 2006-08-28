@@ -17,9 +17,13 @@
 package org.apache.commons.pipeline.driver;
 
 /**
- *
- * @author kjn
+ * An enumeration of error handling strategies for stage processing.
  */
 public enum FaultTolerance {
-    NONE, CHECKED, ALL;
+    /** All exceptions are allowed to propagate up the stack and halt stage processing */
+    NONE, 
+    /** Only unchecked exceptions are allowed to propagate up the stack. */
+    CHECKED, 
+    /** All exceptions are swallowed and logged; stage processing continues with the next object as normal. */
+    ALL;
 }

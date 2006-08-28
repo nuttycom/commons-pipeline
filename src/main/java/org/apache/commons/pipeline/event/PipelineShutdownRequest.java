@@ -21,7 +21,7 @@ import org.apache.commons.pipeline.*;
 
 /**
  *
- * @author kjn
+ *
  */
 public class PipelineShutdownRequest extends EventObject {
     private String message;

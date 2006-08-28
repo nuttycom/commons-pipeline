@@ -26,7 +26,7 @@ import org.apache.commons.pipeline.testFramework.TestStageContext;
 
 /**
  *
- * @author kjn
+ *
  */
 public class SynchronousStageDriverTest extends AbstractStageDriverTest {
     
