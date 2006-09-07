@@ -99,8 +99,8 @@ public class DedicatedThreadStageDriverFactory implements StageDriverFactory {
     private FaultTolerance faultTolerance = FaultTolerance.NONE;
     
     /**
-     * Getter for property faultTolerance.
-     * 
+     * Getter for property faultTolerance. See {@link FaultTolerance} for valid values
+     * and enumation meanings.
      * @return Value of property faultTolerance.
      */
     public FaultTolerance getFaultTolerance() {
