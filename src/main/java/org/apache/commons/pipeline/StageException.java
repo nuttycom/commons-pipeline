@@ -21,42 +21,7 @@ package org.apache.commons.pipeline;
  */
 public class StageException extends java.lang.Exception {
     //Stage within which the error occurred
-    private Stage source;
-    
-    /**
-     * Creates a new instance of <code>StageException</code> without detail message.
-     */
-    public StageException() {
-    }
-    
-    
-    /**
-     * Constructs an instance of <code>StageException</code> with the specified detail message.
-     * @param msg the detail message for the error that occurred.
-     */
-    public StageException(String msg) {
-        super(msg);
-    }
-    
-    /**
-     * Constructs an instance of <code>StageException</code> with the specified cause.
-     * @param thr The underlying exception that caused this exception to be thrown.
-     */
-    public StageException(Throwable thr) {
-        super(thr);
-    }
-    
-    
-    
-    /**
-     * Constructs an instance of <code>StageException</code> with the specified detail message and cause
-     * @param msg the detail message.
-     * @param cause Throwable that caused this exception.
-     */
-    public StageException(String msg, Throwable cause) {
-        super(msg, cause);
-    }
-    
+    private Stage source;    
     
     /**
      * Creates a new instance of <code>StageException</code> without detail message.
@@ -76,6 +41,18 @@ public class StageException extends java.lang.Exception {
         super(msg);
         this.source = source;
     }
+    
+    
+    /**
+     * Constructs an instance of <code>StageException</code> with the specified detail message and cause
+     * @param source the stage where the error occurred
+     * @param msg the detail message.
+     * @param cause Throwable that caused this exception.
+     */
+    public StageException(Stage source, Throwable cause) {
+        super(cause);
+        this.source = source;
+    }    
     
     
     /**
