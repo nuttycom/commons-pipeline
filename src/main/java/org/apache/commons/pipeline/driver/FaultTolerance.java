@@ -17,13 +17,31 @@
 package org.apache.commons.pipeline.driver;
 
 /**
- * An enumeration of error handling strategies for stage processing.
+ * Stores the failure tolerance flag for a worker thread. If faultTolerance
+ * is set to CHECKED, {@link org.apache.commons.pipeline.StageException StageException}s thrown by
+ * the {@link org.apache.commons.pipeline.Stage#process(Object)} method will not interrupt queue
+ * processing, but will simply be logged with a severity of ERROR.
+ * If faultTolerance is set to ALL, runtime exceptions will also be
+ * logged and otherwise ignored.
+ *
+ *
  */
 public enum FaultTolerance {
-    /** All exceptions are allowed to propagate up the stack and halt stage processing */
+    /**
+     * {@link org.apache.commons.pipeline.StageException StageException}s thrown by
+     * the {@link org.apache.commons.pipeline.Stage#process(Object)} method will interrupt queue
+     * processing and will be logged with a severity of ERROR.
+     */
     NONE, 
-    /** Only unchecked exceptions are allowed to propagate up the stack. */
+    /**
+     * {@link org.apache.commons.pipeline.StageException StageException}s thrown by
+     * the {@link org.apache.commons.pipeline.Stage#process(Object)} method will not interrupt queue
+     * processing, but will simply be logged with a severity of ERROR.
+     */
     CHECKED, 
-    /** All exceptions are swallowed and logged; stage processing continues with the next object as normal. */
+    /**
+     * If faultTolerance is set to ALL, runtime exceptions will be
+     * logged and otherwise ignored.
+     */
     ALL;
 }
