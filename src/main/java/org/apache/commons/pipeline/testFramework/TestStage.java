@@ -37,6 +37,11 @@ public class TestStage implements Stage {
     public boolean postprocessed = false;
     public boolean released = false;
     
+    /**
+     * Construct a TestStage with a numeric index used to easily identify this stage. 
+     * The {@link getIndex} and {@link toString} methods use this index.
+     * @param index acts as an identification number
+     */
     public TestStage(int index) {
         this.index = index;
     }

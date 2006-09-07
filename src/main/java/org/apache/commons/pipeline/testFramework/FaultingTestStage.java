@@ -16,13 +16,21 @@
 
 package org.apache.commons.pipeline.testFramework;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.commons.pipeline.*;
 import org.apache.commons.pipeline.validation.ConsumedTypes;
 import org.apache.commons.pipeline.validation.ProducesConsumed;
 
+/**
+ * This stage will generate {@link StageException}s for every other object this
+ * stage processes. By design, the even numbered objects will cause a <CODE>StageException</CODE>
+ * to be thrown (counting the first object as 1).
+ */
 @ConsumedTypes(Object.class)
 @ProducesConsumed
 public class FaultingTestStage extends TestStage {
+    private Log log = LogFactory.getLog(FaultingTestStage.class);
     private int counter = 0;
     
     public FaultingTestStage(int index) {
@@ -30,7 +38,11 @@ public class FaultingTestStage extends TestStage {
     }
     
     public void process(Object obj) throws StageException {
-        if (++counter % 2 == 0) throw new StageException("Planned fault in stage " + super.getIndex() + ".");
+        if (++counter % 2 == 0) {
+            log.error("Planned fault in stage " + this + ".");
+            throw new StageException(this, "Planned fault in stage " + super.getIndex() + ".");
+        }
+        
         super.process(obj);
     }
 }
