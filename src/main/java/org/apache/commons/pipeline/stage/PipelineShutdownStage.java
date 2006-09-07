@@ -22,7 +22,6 @@ import org.apache.commons.pipeline.event.PipelineShutdownRequest;
 /**
  *
  *
- * @version $Id: PipelineShutdownStage.java 3562 2006-08-03 20:54:13Z kjn $
  */
 public class PipelineShutdownStage extends BaseStage {
     

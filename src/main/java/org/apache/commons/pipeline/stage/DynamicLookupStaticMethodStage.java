@@ -107,11 +107,11 @@ public class DynamicLookupStaticMethodStage extends BaseStage {
             for (Class<?> clazz : argTypes) message.append(clazz.getName()).append(" ");
             message.append("]");
             
-            throw new StageException(message.toString() ,e);
+            throw new StageException(this, message.toString() ,e);
         } catch (IllegalAccessException e){
-            throw new StageException(e);
+            throw new StageException(this, e);
         } catch (InvocationTargetException e){
-            throw new StageException(e);
+            throw new StageException(this, e);
         }
     }
     

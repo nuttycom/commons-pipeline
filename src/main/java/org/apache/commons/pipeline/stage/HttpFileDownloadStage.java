@@ -98,7 +98,7 @@ public class HttpFileDownloadStage extends BaseStage {
                 throw new IllegalArgumentException("Unrecognized parameter class to process() for HttpFileDownload: " + obj.getClass().getName() + "; must be URL or String");
             }
         } catch (MalformedURLException e) {
-            throw new StageException("Malformed URL: " + obj.toString(), e);
+            throw new StageException(this, "Malformed URL: " + obj, e);
         }
         
         log.debug("Retrieving data from " + url.toString());
@@ -125,7 +125,7 @@ public class HttpFileDownloadStage extends BaseStage {
             }
              */
         } catch (IOException e) {
-            throw new StageException(e.getMessage(), e);
+            throw new StageException(this, e);
         }
         
         File workFile = null;
@@ -143,7 +143,7 @@ public class HttpFileDownloadStage extends BaseStage {
             out.close();
             in.close();
         } catch (IOException e) {
-            throw new StageException("An error occurred downloading a data file from " + url.toString() + ": " + e.getMessage(), e);
+            throw new StageException(this, "An error occurred downloading a data file from " + url.toString(), e);
         } finally {
             con.disconnect();
         }

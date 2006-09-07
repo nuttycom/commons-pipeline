@@ -85,9 +85,9 @@ public class InvokeStaticMethodStage extends BaseStage {
                 this.context.getBranchFeeder(nullResultBranchKey).feed(obj);
             }
         } catch (IllegalAccessException e){
-            throw new StageException(e);
+            throw new StageException(this, e);
         } catch (InvocationTargetException e){
-            throw new StageException(e);
+            throw new StageException(this, e);
         }       
     }
 

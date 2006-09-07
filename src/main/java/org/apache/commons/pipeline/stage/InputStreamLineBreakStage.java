@@ -55,7 +55,7 @@ public class InputStreamLineBreakStage extends BaseStage {
                 line = buffered.readLine();
             }
         } catch (IOException e){
-            throw new StageException(e);
+            throw new StageException(this, e);
         }
     }
 

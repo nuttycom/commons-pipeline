@@ -28,7 +28,7 @@ import org.apache.commons.pipeline.StageException;
  * at the time of object construction.
  *
  *
- * @version $Id: InvokeMethodStage.java 3562 2006-08-03 20:54:13Z kjn $
+ * @version $Id: InvokeMethodStage.java 3742 2006-08-28 16:50:23Z kjn $
  */
 public class InvokeMethodStage extends BaseStage {
     private static final Log log = LogFactory.getLog(InvokeMethodStage.class);
@@ -86,9 +86,9 @@ public class InvokeMethodStage extends BaseStage {
             Object result = method.invoke(obj, arguments);
             this.emit(result);
         } catch (IllegalAccessException e){
-            throw new StageException(e);
+            throw new StageException(this, e);
         } catch (InvocationTargetException e){
-            throw new StageException(e);
+            throw new StageException(this, e);
         }
     }
 }

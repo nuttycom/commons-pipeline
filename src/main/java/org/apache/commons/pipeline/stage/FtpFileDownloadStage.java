@@ -91,10 +91,10 @@ public class FtpFileDownloadStage extends BaseStage {
             client.login(user, password);
             log.debug(client.getReplyString());
             if(!FTPReply.isPositiveCompletion(client.getReplyCode())) {
-                throw new StageException("FTP login failed for user " + user + ": " + client.getReplyString());
+                throw new StageException(this, "FTP login failed for user " + user + ": " + client.getReplyString());
             }
         } catch (IOException e) {
-            throw new StageException(e.getMessage(), e);
+            throw new StageException(this, e.getMessage(), e);
         }
     }
     
@@ -105,7 +105,7 @@ public class FtpFileDownloadStage extends BaseStage {
      * @throws ClassCastException if the parameter obj is not an instance of java.net.URL
      */
     public void process(Object obj) throws StageException {
-        if (!this.fworkDir.exists()) throw new StageException("The work directory for file download " + workDir.toString() + " does not exist.");
+        if (!this.fworkDir.exists()) throw new StageException(this, "The work directory for file download " + workDir.toString() + " does not exist.");
         
         FileSpec spec = (FileSpec) obj;
         
@@ -122,7 +122,7 @@ public class FtpFileDownloadStage extends BaseStage {
             client.enterLocalPassiveMode();
             searchCurrentDirectory("", spec);
         } catch (IOException e) {
-            throw new StageException(e.getMessage(), e);
+            throw new StageException(this, e);
         }
     }
     

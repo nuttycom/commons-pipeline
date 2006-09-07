@@ -54,7 +54,7 @@ public class URLToInputStreamStage extends BaseStage {
             try {
                 url = new URL(urlString);
             } catch (MalformedURLException e){
-                throw new StageException("Error converting url String:" + urlString,e);
+                throw new StageException(this, "Error converting url String:" + urlString, e);
             }
         }
         
@@ -64,7 +64,7 @@ public class URLToInputStreamStage extends BaseStage {
             log.info("enqueing input stream");
             this.emit(inputStream);
         } catch (IOException e){
-            throw new StageException("Error with stream from url:" + url,e);
+            throw new StageException(this, "Error with stream from url:" + url, e);
         }
     }
     
