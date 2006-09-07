@@ -19,10 +19,10 @@ package org.apache.commons.pipeline;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EventObject;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -60,6 +60,9 @@ public class Pipeline implements Runnable, StageContext {
     
     // Map of pipeline branches where the keys are branch names.
     private final Map<String,Pipeline> branches;
+    
+    // Used to store a reference to the parent pipeline, if this is a branch
+    private Pipeline parent;
     
     // The list of listeners registered with the pipeline.
     private final List<StageEventListener> listeners;
@@ -100,22 +103,32 @@ public class Pipeline implements Runnable, StageContext {
     }
     
     /**
-     * Notifies each registered listener of an event and propagates
-     * the event to any attached branches
+     * Asynchronously notifies each registered listener of an event and propagates
+     * the event to any attached branches and the parent pipeline.
+     *
      * @param ev The event to be sent to registered listeners
      */
-    public void raise(final java.util.EventObject ev) {
+    public void raise(final EventObject ev) {
         new Thread() {
             public void run() {
-                for (StageEventListener listener : listeners) {
-                    listener.notify(ev);
-                }
+                //first, recursively find the root pipeline
+                Pipeline root = Pipeline.this;
+                while (root.parent != null) root = root.parent;
                 
-                for (Pipeline branch : branches.values()) {
-                    if (branch != Pipeline.this) branch.raise(ev);
-                }
-        }
+                //notify the listeners from the root pipeline
+                root.notifyListeners(ev);
+            }
         }.start();
+    }
+    
+    /**
+     * Notify all listeners and recursively notify child branches of the
+     * specified event. This method does not propagate events to the
+     * parent pipeline.
+     */
+    private void notifyListeners(EventObject ev) {
+        for (StageEventListener listener : listeners) listener.notify(ev);
+        for (Pipeline branch : branches.values()) branch.notifyListeners(ev);
     }
     
     /**
@@ -135,7 +148,7 @@ public class Pipeline implements Runnable, StageContext {
             for (int i = drivers.size() - 2; i >= 0; i--) {
                 if (stage == drivers.get(i).getStage()) return drivers.get(i+1).getFeeder();
             }
-        
+            
             throw new IllegalStateException("Unable to find stage " + stage + " in pipeline.");
         }
     }
@@ -155,6 +168,7 @@ public class Pipeline implements Runnable, StageContext {
      * be used to validate that the appended Stage can consume the output of the
      * previous stage of the pipeline. It does NOT validate the ability or availability
      * of branches to consume data produced by the appended stage.
+     *
      * @param stage the stage to be added to the pipeline
      * @param driverFactory the factory that will be used to create a {@link StageDriver} that will run the stage
      * @throws ValidationException if there is a non-null validator set for this pipeline and an error is
@@ -189,6 +203,7 @@ public class Pipeline implements Runnable, StageContext {
     
     /**
      * Return the StageDriver for the specified Stage.
+     *
      * @return the StageDriver for the specified Stage.
      */
     public final StageDriver getStageDriver(Stage stage) {
@@ -211,24 +226,25 @@ public class Pipeline implements Runnable, StageContext {
      * @throws org.apache.commons.pipeline.validation.ValidationException if the pipeline has a non-null {@link PipelineValidator} and the branch
      * cannot consume the data produced for the branch by stages in the pipeline.
      */
-    public void addBranch(String key, Pipeline pipeline) throws ValidationException {
+    public void addBranch(String key, Pipeline branch) throws ValidationException {
         if (key == null)
             throw new IllegalArgumentException("Branch key may not be null.");
         if (MAIN_BRANCH.equalsIgnoreCase(key))
             throw new IllegalArgumentException("Branch key name \"" + MAIN_BRANCH + "\" is reserved.");
-        if (pipeline == null)
+        if (branch == null)
             throw new IllegalArgumentException("Illegal attempt to set reference to null branch.");
-        if (pipeline == this || pipeline.hasBranch(this))
+        if (branch == this || branch.hasBranch(this))
             throw new IllegalArgumentException("Illegal attempt to set reference to self as a branch (infinite recursion potential)");
         
         if (validator != null) {
-            List<ValidationFailure> errors = validator.validateAddBranch(this, key, pipeline);
+            List<ValidationFailure> errors = validator.validateAddBranch(this, key, branch);
             if (errors != null && !errors.isEmpty()) {
-                throw new ValidationException("An error occurred adding branch pipeline " + pipeline, errors);
+                throw new ValidationException("An error occurred adding branch pipeline " + branch, errors);
             }
         }
         
-        this.branches.put(key, pipeline);
+        branch.parent = this;
+        this.branches.put(key, branch);
     }
     
     /**
@@ -250,19 +266,19 @@ public class Pipeline implements Runnable, StageContext {
         if (branches.containsValue(pipeline)) return true;
         for (Pipeline branch : branches.values()) {
             if (branch.hasBranch(pipeline)) return true;
-            }
-            
-        return false;
         }
         
+        return false;
+    }
+    
     /**
      * Returns a feeder for the first stage if the pipeline is not empty
      * @return the feeder to feed the first stage of the pipeline
      */
     public Feeder getSourceFeeder() {
-        if (drivers.isEmpty()) return null;
+        if (drivers.isEmpty()) return this.terminalFeeder;
         return drivers.peek().getFeeder();
-        }
+    }
     
     /**
      * Gets the feeder that receives output from the final stage.
@@ -286,6 +302,7 @@ public class Pipeline implements Runnable, StageContext {
      * Startups may occur sequentially or in parallel, depending upon the stage driver
      * used.  If a the stage has not been configured with a {@link StageDriver},
      * we will use the default, non-threaded {@link SynchronousStageDriver}.
+     *
      * @throws org.apache.commons.pipeline.StageException Thrown if there is an error during pipeline startup
      */
     public void start() throws StageException {
@@ -300,6 +317,7 @@ public class Pipeline implements Runnable, StageContext {
      * method will block until the stage's queue is exhausted, so this method
      * may be used to safely finalize all stages without the risk of
      * losing data in the queues.
+     *
      * @throws org.apache.commons.pipeline.StageException Thrown if there is an unhandled error during stage shutdown
      */
     public void finish() throws StageException {
