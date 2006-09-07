@@ -38,8 +38,10 @@ public class ObjectProcessedEventCounter implements StageEventListener {
     private Map<Stage,Integer> counts = Collections.synchronizedMap(new HashMap<Stage, Integer>());
     
     public synchronized void notify(EventObject evo) {
+        if (evo instanceof ObjectProcessedEvent) {
         ObjectProcessedEvent ev = (ObjectProcessedEvent) evo;
         if (!counts.containsKey(ev.getSource())) counts.put(ev.getSource(), 1);
+    }
     }
     
     public Map<Stage, Integer> getCounts() {
