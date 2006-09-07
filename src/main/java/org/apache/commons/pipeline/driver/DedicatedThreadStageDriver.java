@@ -21,20 +21,21 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.commons.pipeline.driver.AbstractStageDriver;
 import org.apache.commons.pipeline.Feeder;
 import org.apache.commons.pipeline.StageDriver;
 import org.apache.commons.pipeline.Stage;
 import org.apache.commons.pipeline.StageContext;
 import org.apache.commons.pipeline.StageException;
-import org.apache.commons.pipeline.StageDriver.State;
 import static org.apache.commons.pipeline.StageDriver.State.*;
+import org.apache.commons.pipeline.StageDriver.State;
 import static org.apache.commons.pipeline.driver.FaultTolerance.*;
 
 /**
- * This is a very simple implementation of a StageDriver which spawns
+ * This is a very simple implementation of a AbstractStageDriver which spawns
  * a single thread to process a stage.
  */
-public class DedicatedThreadStageDriver extends StageDriver {
+public class DedicatedThreadStageDriver extends AbstractStageDriver {
     private final Log log = LogFactory.getLog(DedicatedThreadStageDriver.class);
     
     //wait timeout to ensure deadlock cannot occur on thread termination
@@ -52,6 +53,24 @@ public class DedicatedThreadStageDriver extends StageDriver {
     //current state of thread processing
     private volatile State currentState = State.STOPPED;
     
+    //feeder used to feed data to this stage's queue
+    private final Feeder feeder = new Feeder() {
+        public void feed(Object obj) {
+            if (log.isDebugEnabled()) log.debug(obj + " is being fed to stage " + stage
+                    + " (" + DedicatedThreadStageDriver.this.queue.remainingCapacity() + " available slots in queue)");
+            try {
+                DedicatedThreadStageDriver.this.queue.put(obj);
+            } catch (InterruptedException e) {
+                throw new IllegalStateException("Unexpected interrupt while waiting for space to become available for object "
+                        + obj + " in queue for stage " + stage, e);
+            }
+            
+            synchronized(DedicatedThreadStageDriver.this) {
+                DedicatedThreadStageDriver.this.notifyAll();
+            }
+        }
+    };
+    
     /**
      * Creates a new DedicatedThreadStageDriver with the specified thread wait
      * timeout and fault tolerance values.
@@ -62,7 +81,7 @@ public class DedicatedThreadStageDriver extends StageDriver {
      * @param timeout The amount of time, in milliseconds, that the worker thread
      * will wait before checking the processing state if no objects are available
      * in the thread's queue.
-     * @param faultTolerant Flag determining the behavior of the driver when
+     * @param faultTolerance Flag determining the behavior of the driver when
      * an error is encountered in execution of {@link Stage#process(Object)}.
      * If this is set to false, any exception thrown during {@link Stage#process(Object)}
      * will cause the worker thread to halt without executing {@link Stage#postprocess()}
@@ -80,15 +99,7 @@ public class DedicatedThreadStageDriver extends StageDriver {
      * @return The feeder for objects processed by this driver's stage.
      */
     public Feeder getFeeder() {
-        return new Feeder() {
-            public void feed(Object obj) {
-                if (log.isDebugEnabled()) log.debug(obj + " is being fed to stage " + stage);
-                DedicatedThreadStageDriver.this.queue.add(obj);
-                synchronized(DedicatedThreadStageDriver.this) {
-                    DedicatedThreadStageDriver.this.notifyAll();
-                }
-            }
-        };
+        return this.feeder;
     }
     
     /**
@@ -106,7 +117,7 @@ public class DedicatedThreadStageDriver extends StageDriver {
             try {
                 while ( !(this.currentState == RUNNING || this.currentState == ERROR) ) this.wait();
             } catch (InterruptedException e) {
-                throw new StageException("Worker thread unexpectedly interrupted while waiting for thread startup.", e);
+                throw new StageException(this.getStage(), "Worker thread unexpectedly interrupted while waiting for thread startup.", e);
             }
         } else {
             throw new IllegalStateException("Attempt to start driver in state " + this.currentState);
@@ -135,7 +146,7 @@ public class DedicatedThreadStageDriver extends StageDriver {
             log.debug("Worker thread for stage " + stage + " halted");
             
         } catch (InterruptedException e) {
-            throw new StageException("Worker thread unexpectedly interrupted while waiting for graceful shutdown.", e);
+            throw new StageException(this.getStage(), "Worker thread unexpectedly interrupted while waiting for graceful shutdown.", e);
         }
         
         setState(STOPPED);
@@ -268,11 +279,11 @@ public class DedicatedThreadStageDriver extends StageDriver {
                             try {
                                 stage.process(obj);
                             } catch (StageException e) {
-                                recordProcessingFailure(obj, e);
+                                recordProcessingException(obj, e);
                                 if (faultTolerance == NONE) throw e;
                             } catch (RuntimeException e) {
-                                recordProcessingFailure(obj, e);
-                                if (faultTolerance == CHECKED || faultTolerance == NONE) throw e;                                        
+                                recordProcessingException(obj, e);
+                                if (faultTolerance == CHECKED || faultTolerance == NONE) throw e;
                             }
                         }
                     } catch (InterruptedException e) {
@@ -298,5 +309,22 @@ public class DedicatedThreadStageDriver extends StageDriver {
             //do not transition into finished state if an error has occurred
             testAndSetState(STOP_REQUESTED, FINISHED);
         }
+    }
+    
+    /**
+     * Get the size of the queue used by this StageDriver.
+     * @return the queue capacity
+     */
+    public int getQueueSize() {
+        return this.queue.size() + this.queue.remainingCapacity();
+    }
+    
+    /**
+     * Get the timeout value (in milliseconds) used by this StageDriver on
+     * thread termination.
+     * @return the timeout setting in milliseconds
+     */
+    public long getTimeout() {
+        return this.timeout;
     }
 }

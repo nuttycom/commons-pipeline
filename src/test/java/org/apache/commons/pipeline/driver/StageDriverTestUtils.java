@@ -17,8 +17,8 @@
 package org.apache.commons.pipeline.driver;
 
 import junit.framework.TestCase;
-import org.apache.commons.pipeline.testFramework.FaultingTestStage;
 import org.apache.commons.pipeline.StageDriver;
+import org.apache.commons.pipeline.testFramework.FaultingTestStage;
 import org.apache.commons.pipeline.StageDriverFactory;
 import org.apache.commons.pipeline.testFramework.TestFeeder;
 import org.apache.commons.pipeline.testFramework.TestStage;
@@ -139,7 +139,7 @@ public class StageDriverTestUtils {
         
         test.assertEquals("Incorrect processed object count from stage 0.", 3, stage0.processedObjects.size());
         test.assertEquals("Incorrect processed object count from stage 1.", 2, stage1.processedObjects.size());
-        test.assertEquals("Incorrect number of processing failures recorded by driver 2.", 1, d1.getProcessingFailures().size());
+        test.assertEquals("Incorrect number of processing failures recorded by driver 2.", 1, d1.getProcessingExceptions().size());
         test.assertEquals("Incorrect processed object count from stage 2.", 2, stage2.processedObjects.size());
         
         test.assertEquals("Incorrect final processed object count.", 2, terminalFeeder.receivedValues.size());

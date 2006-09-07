@@ -16,13 +16,11 @@
 
 package org.apache.commons.pipeline.driver;
 
-import junit.framework.*;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.apache.commons.pipeline.Feeder;
 import org.apache.commons.pipeline.StageDriver.State;
-import static org.apache.commons.pipeline.StageDriver.State.*;
-import org.apache.commons.pipeline.testFramework.TestFeeder;
-import org.apache.commons.pipeline.testFramework.TestStage;
-import org.apache.commons.pipeline.testFramework.TestStageContext;
+
 
 /**
  *
@@ -32,7 +30,7 @@ public class SynchronousStageDriverTest extends AbstractStageDriverTest {
     
     public SynchronousStageDriverTest(String testName) {
         super(testName);
-    }    
+    }
     
     public static Test suite() {
         TestSuite suite = new TestSuite(SynchronousStageDriverTest.class);
@@ -47,12 +45,12 @@ public class SynchronousStageDriverTest extends AbstractStageDriverTest {
         SynchronousStageDriver instance = new SynchronousStageDriver(stage, context);
         
         Feeder feeder = instance.getFeeder();
-        assertNotNull(feeder);        
+        assertNotNull(feeder);
     }
     
     /**
      * Due to the design of the SynchronousStageDriver, it is meaningless
-     * to independently test the start or finish methods; however, testing 
+     * to independently test the start or finish methods; however, testing
      * both together is meaningful. This test also provides verification of
      * proper behavior of the getState() method.
      */
@@ -69,14 +67,14 @@ public class SynchronousStageDriverTest extends AbstractStageDriverTest {
         
         assertEquals(instance.getState(), State.STOPPED);
     }
-        
+    
     /*********************
      * INTEGRATION TESTS *
      *********************/
     
-    public void testSingleStage() throws Exception {       
+    public void testSingleStage() throws Exception {
         StageDriverTestUtils.testSingleStage(this, new SynchronousStageDriverFactory());
-    }    
+    }
     
     public void testMultiStage() throws Exception {
         StageDriverTestUtils.testMultiStage(this, new SynchronousStageDriverFactory());

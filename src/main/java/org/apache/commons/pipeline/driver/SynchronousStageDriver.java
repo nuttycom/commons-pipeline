@@ -22,16 +22,15 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.pipeline.Feeder;
 import org.apache.commons.pipeline.Stage;
-import org.apache.commons.pipeline.StageDriver;
+import org.apache.commons.pipeline.driver.AbstractStageDriver;
 import org.apache.commons.pipeline.StageException;
 import org.apache.commons.pipeline.StageContext;
-import org.apache.commons.pipeline.StageDriver.State;
 import static org.apache.commons.pipeline.StageDriver.State.*;
 
 /**
- * This is a non-threaded version of the StageDriver.
+ * This is a non-threaded version of the AbstractStageDriver.
  */
-public class SynchronousStageDriver extends StageDriver {
+public class SynchronousStageDriver extends AbstractStageDriver {
     private final Log log = LogFactory.getLog(SynchronousStageDriver.class);
     
     //flag describing whether or not the driver is fault tolerant
@@ -43,6 +42,25 @@ public class SynchronousStageDriver extends StageDriver {
     //queue of objects to be processed that are fed to the driver
     //when it is not in a running state
     private Queue<Object> queue = new LinkedList<Object>();
+    
+    //Feeder used to feed objects to this stage
+    private final Feeder feeder = new Feeder() {
+        public void feed(Object obj) {
+            synchronized (SynchronousStageDriver.this) {
+                if (currentState != RUNNING) { //enqueue objects if stage has not been started
+                    if (currentState == ERROR) throw new IllegalStateException("Unable to process data: driver in fatal error state.");
+                    queue.add(obj);
+                } else {
+                    try {
+                        stage.process(obj);
+                    } catch (StageException e) {
+                        recordProcessingException(obj, e);
+                        if (!faultTolerant) throw fatalError(e);
+                    }
+                }
+            }
+        }
+    };
     
     /**
      * Creates a new instance of SimpleStageDriver
@@ -61,23 +79,7 @@ public class SynchronousStageDriver extends StageDriver {
      * @return The Feeder instance for the stage.
      */
     public Feeder getFeeder() {
-        return new Feeder() {
-            public void feed(Object obj) {
-                synchronized (SynchronousStageDriver.this) {
-                    if (currentState != RUNNING) { //enqueue objects if stage has not been started
-                        if (currentState == ERROR) throw new IllegalStateException("Unable to process data: driver in fatal error state.");
-                        queue.add(obj);
-                    } else {                        
-                        try {
-                            stage.process(obj);
-                        } catch (StageException e) {
-                            recordProcessingFailure(obj, e);
-                            if (!faultTolerant) throw fatalError(e);
-                        }
-                    }
-                }
-            }
-        };
+        return this.feeder;
     }
     
     /**
@@ -95,7 +97,7 @@ public class SynchronousStageDriver extends StageDriver {
             
             this.currentState = RUNNING;
             this.notifyAll();
-
+            
             // feed any queued values before returning control
             while (!queue.isEmpty()) this.getFeeder().feed(queue.remove());
         } else {
