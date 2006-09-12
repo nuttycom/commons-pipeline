@@ -23,6 +23,20 @@
       <timezone>-7</timezone>
     </developer>
   </developers>
+  <contributors>
+    <contributor>
+      <name>Steve Christensen</name>
+      <email/>
+    </contributor>
+    <contributor>
+      <name>Travis Stevens</name>
+      <email>mrxtravis@yahoo.com</email>
+    </contributor>
+    <contributor>
+      <name>Ken Tanaka</name>
+      <email>Ken.Tanaka@noaa.gov</email>
+    </contributor>
+  </contributors>
   <scm>
     <connection>scm:svn:http://svn.apache.org/repos/asf/jakarta/commons/sandbox/pipeline/trunk</connection>
     <developerConnection>scm:svn:https://svn.apache.org/repos/asf/jakarta/commons/sandbox/pipeline/trunk</developerConnection>
