@@ -159,6 +159,10 @@ public class Pipeline implements Runnable, StageContext {
      * @return the feeder for the specified branch
      */
     public Feeder getBranchFeeder(String branch) {
+        if (!getBranches().containsKey(branch)) {
+            throw new IllegalStateException("Unable to find branch in pipeline: '" + branch + "'");
+        }
+
         return branches.get(branch).getSourceFeeder();
     }
     
@@ -358,5 +362,13 @@ public class Pipeline implements Runnable, StageContext {
      */
     public void setValidator(PipelineValidator validator) {
         this.validator = validator;
+    }
+
+    /**
+     * Returns the parent of this pipeline, if it is a branch
+     * @return parent Pipeline, or null if this is the main pipeline
+     */
+    public Pipeline getParent() {
+        return parent;
     }
 }
