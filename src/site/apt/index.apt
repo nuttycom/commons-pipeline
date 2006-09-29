@@ -1,29 +1,53 @@
-        --------
-        Overview
-        --------
+        ----------------
+            Overview
+        ----------------
 
 The Processing Pipeline
 
-  This project provides a set of serial processing utilities designed around 
-the concept of a processing pipeline. A pipeline in its simplest form is 
-a series of work queue processors that allow objects to be passed between 
-stages in a sequential fashion.
+  This project provides a lightweight set of utilities that make it simple
+to implement parallelized data processing systems. Data objects flowing through
+the pipeline are processed by a series of independent user-defined components
+called {{{apidocs/org/apache/commons/pipeline/Stage.html}Stages}}. A pipeline
+may have a number of different branches of execution, each of which is
+a fully qualified Pipeline in its own right.
 
-  The primary processing element in a pipeline is called a Stage. A stage contains
-an input queue of objects for which it it is a consumer, and acts a producer 
-of processed objects for subsequent stages and pipeline branches. A stage can
-act as a filter for data, or may have more complex responsibilities such
+Stages in the Pipeline
+
+  The {{{apidocs/org/apache/commons/pipeline/Stage.html}Stage}} is 
+the primary unit of execution in a processing pipeline. Each
+Stage has a well defined lifecycle that passes through setup, processing, and 
+cleanup states. When a pipeline starts running, each Stage runs its setup
+method and then waits for an object to be passed to its 
+{{{apidocs/org/apache/commons/pipeline/Stage.html#process(java.lang.Object)}process()}}
+method. This method is implemented by the user to provide some sort of
+useful operation on the data, after which the object or products of the 
+processing can be passed to subsequent stages and/or branches.
+
+  A stage can act as a filter for data, or may have more complex responsibilities such
 as finding and allocating resources for subsequent stages.
 
-  In addition to sequential processing, a simple event model is provided to
-enable asynchronous communication between stages in the pipeline.
+Multithreaded Processing
+
+  Several threading models are available to choose from including synchronous
+processing (each object input to the pipeline passes through the entire pipeline
+before the next is processed), and a couple of different multithreaded processing
+models that run each stage in either a single dedicated thread or using a pool of 
+threads to perform processing. The threading model chosen for each stage is
+independent of both the stage implementation and of the threading models used for
+other stages, providing a great deal of flexibility when it comes to configuring the 
+processing system. Threading models are defined by implementations of the
+{{{apidocs/org/apache/commons/pipeline/StageDriver.html}StageDriver}} interface.
+
+Event-Based Inter-Stage Communication
+
+  In addition to sequential processing of objects, a simple event model is provided to
+enable asynchronous communication between stages in the pipeline and its branches.
 
 Releases
+
   This project has no released versions.
 
 Documentation
 
-  The {{{apidocs/index.html}JavaDoc API documents}} are available online.
+  The {{{apidocs/index.html}JavaDoc API documentation}} is available online.
 
-  Please refer to the org.apache.commons.pipeline.config.DigesterPipelineFactoryTest 
-source code for a simple example of how to use the pipeline.
