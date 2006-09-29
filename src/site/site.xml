@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <project name="Maven">
-  <bannerLeft>
+  <bannerRight>
     <name>Jakarta Commons Pipeline</name>
     <src>images/pipeline-logo-white.png</src>
     <href>http://jakarta.apache.org/commons/sandbox/pipeline/</href>
-  </bannerLeft>
+  </bannerRight>
   <body>
     <menu name="Commons Pipeline">
       <item name="Overview" href="index.html"/>      
@@ -12,7 +12,6 @@
       <item name="FAQ" href="faq.html"/>
     </menu>
 
-    <!--menu ref="parent"/-->
     <menu ref="reports"/>
   </body>
 </project>
