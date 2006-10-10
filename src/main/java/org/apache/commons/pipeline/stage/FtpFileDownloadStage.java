@@ -66,6 +66,7 @@ public class FtpFileDownloadStage extends BaseStage {
     
     /**
      * Constructor specifying work directory.
+     * @param workDir local directory in which to store downloaded files
      */
     public FtpFileDownloadStage(String workDir) {
         this.workDir = workDir;
@@ -73,7 +74,9 @@ public class FtpFileDownloadStage extends BaseStage {
     
     /**
      * Creates the download directory {@link #setWorkDir(String) workDir} uf it does
-     * not exist.
+     * not exist and makes a connection to the remote FTP server.
+     * @throws org.apache.commons.pipeline.StageException if a connection to the remote FTP server cannot be established, or the login to
+     * the remote system fails
      */
     public void preprocess() throws StageException {
         super.preprocess();
@@ -94,15 +97,17 @@ public class FtpFileDownloadStage extends BaseStage {
                 throw new StageException(this, "FTP login failed for user " + user + ": " + client.getReplyString());
             }
         } catch (IOException e) {
-            throw new StageException(this, e.getMessage(), e);
+            throw new StageException(this, e);
         }
     }
     
     /**
      * Retrieves files that match the specified FileSpec from the FTP server
      * and stores them in the work directory.
-     *
-     * @throws ClassCastException if the parameter obj is not an instance of java.net.URL
+     * @param obj incoming {@link FileSpec} that indicates the file to download along with some flags to
+     * control the download behavior
+     * @throws org.apache.commons.pipeline.StageException if there are errors navigating the remote directory structure or file download 
+     * fails
      */
     public void process(Object obj) throws StageException {
         if (!this.fworkDir.exists()) throw new StageException(this, "The work directory for file download " + workDir.toString() + " does not exist.");
@@ -155,10 +160,26 @@ public class FtpFileDownloadStage extends BaseStage {
                     }
                 }
                 
+                boolean getFile = true;
                 File localFile = new File(workDir + File.separatorChar + localPath);
-                if (localFile.exists() && !spec.overwrite) {
-                    //if (spec.)
+                if (localFile.exists()) {
+                    if (spec.overwrite) {
+                        log.info("Replacing existing local file " + localFile.getPath());
+                        getFile = true;
+                    } else {
+                        if (spec.ignoreExisting) {
+                            log.info("Ignoring existing local file " + localFile.getPath());
+                            continue search;
                 } else {
+                            log.info("Using existing local file " + localFile.getPath());
+                            getFile = false;
+                        }
+                    }
+                } else {
+                    getFile = true;
+                }
+                
+                if (getFile) {
                     if (! localFile.getParentFile().exists()) localFile.getParentFile().mkdir();
                     
                     OutputStream out = new FileOutputStream(localFile);
@@ -189,6 +210,7 @@ public class FtpFileDownloadStage extends BaseStage {
     /**
      * Sets the working directory for the file download. If the directory does
      * not already exist, it will be created during the preprocess() step.
+     * @param workDir local directory to receive file downloads
      */
     public void setWorkDir(String workDir) {
         this.workDir = workDir;
@@ -196,6 +218,7 @@ public class FtpFileDownloadStage extends BaseStage {
     
     /**
      * Returns the name of the file download directory.
+     * @return the string containing the local working directory
      */
     public String getWorkDir() {
         return this.workDir;
@@ -259,12 +282,50 @@ public class FtpFileDownloadStage extends BaseStage {
     
     /**
      * This class is used to specify a path and pattern of file for the FtpFileDownload
-     * to retrieve.
+     * to retrieve. There are some parameters that can be configured in the filespec
+     * that will control download behavior for <CODE>recursive</CODE> searching, the 
+     * <CODE>overwrite</CODE> of locally existing files, and to 
+     * <CODE>ignoreExisting</CODE> files.
+     * <p>
+     * If a file already exists in the local directory, it is only replaced if 
+     * <CODE>overwrite</CODE> is set to <CODE>true</CODE>. If it is replaced, then the
+     * filename is passed on to the next stage. Existing files are passed on to the
+     * stage unless <CODE>ignoreExisting</CODE> is <CODE>true</CODE>. Note that the
+     * <CODE>ignoreExisting</CODE> flag is only used if <CODE>overwrite</CODE> is 
+     * <CODE>false</CODE> (it's assumed that if a file will be downloaded, then it 
+     * shouldn't be ignored).
+     * <p>
+     * Pseudocode to summarize the interaction of <CODE>overwrite</CODE> and 
+     * <CODE>ignoreExisting</CODE>: <PRE>
+     *     if (file exists) {
+     *        if (overwrite) {
+     *            download file over existing local copy
+     *            and pass it on to the next stage
+     *        } else {
+     *            if (ignoreExisting) {
+     *                skip this file
+     *            } else {
+     *                pass existing file on to the next stage
+     *            }
+     *        }
+     *     } else {
+     *        download new file 
+     *        and pass it on to the next stage
+     *     }
+     * </PRE>
      */
     public static class FileSpec {
-        //enumeration of legal file types
+        /**
+         * Enumeration of legal FTP file tranfer types
+         */
         public enum FileType {
+            /**
+             * ASCII text transfer mode, with end of line conversion.
+             */
             ASCII(FTPClient.ASCII_FILE_TYPE),
+            /**
+             * Binary transfer mode, no changes made to data stream.
+             */
                     BINARY(FTPClient.BINARY_FILE_TYPE);
             
             private int type;
@@ -273,6 +334,10 @@ public class FtpFileDownloadStage extends BaseStage {
                 this.type = type;
             }
             
+            /**
+             * Get the integer value of the FTP transfer mode enumeration.
+             * @return the integer equivalent to the FTP transfer mode setting
+             */
             public int intValue() {
                 return this.type;
             }
@@ -285,7 +350,12 @@ public class FtpFileDownloadStage extends BaseStage {
         private boolean recursive;
         
         // Holds flag that determines whether or not to overwrite local files
-        private boolean overwrite;
+        private boolean overwrite = false;
+
+        /**
+         * Holds flag that determines if existing files are passed to the next stage.
+         */
+        private boolean ignoreExisting = false;
         
         // Type of file (ascii or binary)
         private FileType type = FileType.BINARY;
@@ -328,6 +398,7 @@ public class FtpFileDownloadStage extends BaseStage {
         /**
          * Add a criterion to the set of criteria that must be matched for files
          * to be downloaded
+         * @param crit {@link Criterion} used to match desired files for download, typically a filename pattern
          */
         public void addCriterion(Criterion crit) {
             this.criteria.add(crit);
@@ -336,6 +407,8 @@ public class FtpFileDownloadStage extends BaseStage {
         /**
          * Sets the flag determining whether or not the stage will recursively
          * traverse the directory tree to find files.
+         * @param recursive this value is <CODE>true</CODE> to recursively search the remote directories for matches to
+         * the criterion, <CODE>false</CODE> to turn off recursive searching
          */
         public void setRecursive(boolean recursive) {
             this.recursive = recursive;
@@ -344,6 +417,7 @@ public class FtpFileDownloadStage extends BaseStage {
         /**
          * Returns whether or not the stage will recursively
          * traverse the directory tree to find files.
+         * @return the current recursive search setting
          */
         public boolean isRecursive() {
             return this.recursive;
@@ -352,6 +426,7 @@ public class FtpFileDownloadStage extends BaseStage {
         /**
          * Sets the file type for the transfer. Legal values are "ascii" and "binary".
          * Binary transfers are the default.
+         * @param fileType the FTP transfer type to use, "<CODE>ascii</CODE>" or "<CODE>binary</CODE>"
          */
         public void setFileType(String fileType) {
             if ("ascii".equalsIgnoreCase(fileType)) {
@@ -363,9 +438,48 @@ public class FtpFileDownloadStage extends BaseStage {
         
         /**
          * Returns the file type for the transfer.
+         * @return the current FTP transfer type setting
          */
         public String getFileType() {
             return this.type.toString();
+        }
+
+        /**
+         * Getter for property overwrite. The default value for this flag is 
+         * <CODE>false</CODE>, so existing local files will not be replaced by downloading
+         * remote files. This flag should be set to <CODE>true</CODE> if it is expected
+         * that the remote file is periodically updated and the local file is and out of
+         * date copy from a previous run of this pipeline.
+         * @return Value of property overwrite.
+         */
+        public boolean isOverwrite() {
+            return this.overwrite;
+        }
+
+        /**
+         * Setter for property overwrite.
+         * @param overwrite New value of property overwrite.
+         */
+        public void setOverwrite(boolean overwrite) {
+            this.overwrite = overwrite;
+        }
+
+        /**
+         * Getter for property ignoreExisting. The default value for this flag is 
+         * <CODE>false</CODE>, so existing files that aren't downloaded are still passed
+         * on to the next stage.
+         * @return Value of property ignoreExisting.
+         */
+        public boolean isIgnoreExisting() {
+            return this.ignoreExisting;
+        }
+
+        /**
+         * Setter for property ignoreExisting.
+         * @param ignoreExisting New value of property ignoreExisting.
+         */
+        public void setIgnoreExisting(boolean ignoreExisting) {
+            this.ignoreExisting = ignoreExisting;
         }
     }
     
@@ -374,6 +488,12 @@ public class FtpFileDownloadStage extends BaseStage {
      * must satisfy.
      */
     public interface Criterion {
+        /**
+         * Interface defining matches for FTP file downloading. Those remote files that
+         * match the criterion will be downloaded.
+         * @param file file to compare criterion to
+         * @return <CODE>true</CODE> if the file meets the Criterion, <CODE>false</CODE> otherwise
+         */
         public boolean matches(FTPFile file);
     }
     
@@ -385,32 +505,58 @@ public class FtpFileDownloadStage extends BaseStage {
         private Pattern pattern;
         private String _pattern;
         
+        /**
+         * Construct a new criterion to match on file names.
+         * @param pattern Java regex pattern specifying acceptable file names
+         */
         public FileNameMatchCriterion(String pattern) {
             this._pattern = pattern;
             this.pattern = Pattern.compile(pattern);
         }
         
+        /**
+         * Test the given file's name against this criterion.
+         * @param file file to compare to
+         * @return <CODE>true</CODE> if the filename matches the filename pattern of this criterion,
+         * <CODE>false</CODE> otherwise
+         */
         public boolean matches(FTPFile file) {
             return pattern.matcher(file.getName()).matches();
         }
         
+        /**
+         * Printable version of this Criterion indicating the Java regex used for filename
+         * matching.
+         * @return a string containing the regex used to construct this filename criterion
+         */
         public String toString() {
             return "filename matches pattern " + _pattern;
         }
     }
     
     /**
-     * Matches files based upon a set of date constraints
+     * Matches files by matching their filesystem timestamp to a date range.
      */
     public static class FileDateMatchCriterion implements Criterion {
         private Date startDate;
         private Date endDate;
         
+        /**
+         * Construct a new criterion to match file timestamp to a range of dates.
+         * @param startDate starting date (inclusive) of the date range
+         * @param endDate ending date (inclusive) of the date range
+         */
         public FileDateMatchCriterion(Date startDate, Date endDate) {
             this.startDate = startDate;
             this.endDate = endDate;
         }
         
+        /**
+         * Test the given file's date against this criterion.
+         * @param file file to compare to
+         * @return <CODE>true</CODE> if the file date falls into the time window of 
+         * [startDate, endDate], <CODE>false</CODE> otherwise
+         */
         public boolean matches(FTPFile file) {
             Calendar cal = file.getTimestamp();
             if ((startDate != null && cal.getTime().before(startDate)) || (endDate != null && cal.getTime().after(endDate))) {
@@ -420,6 +566,11 @@ public class FtpFileDownloadStage extends BaseStage {
             }
         }
         
+        /**
+         * Printable version of this Criterion indicating the inclusive date range used
+         * for file date matching.
+         * @return a string noting the startDate and endDate
+         */
         public String toString() {
             return "file date is between " + startDate + " and " + endDate;
         }
