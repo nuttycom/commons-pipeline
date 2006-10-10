@@ -34,8 +34,8 @@ import static org.apache.commons.pipeline.StageDriver.State.*;
 import static org.apache.commons.pipeline.driver.FaultTolerance.*;
 
 /**
- * This is a very simple implementation of a AbstractStageDriver which spawns
- * a single thread to process a stage.
+ * This {@link StageDriver} implementation uses a pool of threads
+ * to process objects from an input queue.
  */
 public class ThreadPoolStageDriver extends AbstractStageDriver {
     private final Log log = LogFactory.getLog(ThreadPoolStageDriver.class);
@@ -79,8 +79,8 @@ public class ThreadPoolStageDriver extends AbstractStageDriver {
     };
     
     /**
-     * Creates a new ThreadPoolStageDriver with the specified thread wait
-     * timeout and fault tolerance values.
+     * Creates a new ThreadPoolStageDriver.
+     *
      * @param stage The stage that the driver will run
      * @param context the context in which to run the stage
      * @param queue The object queue to use for storing objects prior to processing. The
