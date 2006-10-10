@@ -25,7 +25,7 @@ import org.apache.commons.pipeline.StageDriver;
 import org.apache.commons.pipeline.StageDriverFactory;
 
 /**
- * This factory is used to create ThreadPoolStageDriver instances configured
+ * This factory is used to create {@link ThreadPoolStageDriver} instances configured
  * to run specific stages.
  */
 public class ThreadPoolStageDriverFactory implements StageDriverFactory {

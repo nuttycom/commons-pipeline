@@ -41,20 +41,21 @@ public class ThreadPoolStageDriverTest extends AbstractStageDriverTest {
         
         return suite;
     }
-        /**
-     * Test of getFeeder method, of class org.apache.commons.pipeline.driver.SynchronousStageDriver.
+    
+    /**
+     * Test of getFeeder method, of class {@link ThreadPoolStageDriver}.
      */
     public void testGetFeeder() {
         log.debug("testGetFeeder ---------------------------------------------");
         ThreadPoolStageDriver instance = new ThreadPoolStageDriver(stage, context, new LinkedBlockingQueue(), 500, FaultTolerance.NONE, 5);
         
         Feeder feeder = instance.getFeeder();
-        assertNotNull(feeder);        
+        assertNotNull(feeder);
     }
     
     /**
-     * Due to the design of the ThreadPoolStageDriver, it is meaningless
-     * to independently test the start or finish methods; however, testing 
+     * Due to the design of the {@link ThreadPoolStageDriver}, it is meaningless
+     * to independently test the start or finish methods; however, testing
      * both together is meaningful. This test also provides verification of
      * proper behavior of the getState() method.
      */
@@ -72,23 +73,23 @@ public class ThreadPoolStageDriverTest extends AbstractStageDriverTest {
         
         assertEquals(State.STOPPED, instance.getState());
     }
-
-        
+    
+    
     /*********************
      * INTEGRATION TESTS *
      *********************/
     
-    public void testSingleStage() throws Exception {        
+    public void testSingleStage() throws Exception {
         log.debug("testSingleStage -------------------------------------------");
         StageDriverTestUtils.testSingleStage(this, new ThreadPoolStageDriverFactory());
     }
     
-    public void testMultiStage() throws Exception {        
+    public void testMultiStage() throws Exception {
         log.debug("testMultiStage --------------------------------------------");
         StageDriverTestUtils.testMultiStage(this, new ThreadPoolStageDriverFactory());
     }
     
-    public void testMultiFaultingStage() throws Exception {       
+    public void testMultiFaultingStage() throws Exception {
         log.debug("testMultiFaultingStage ------------------------------------");
         ThreadPoolStageDriverFactory factory = new ThreadPoolStageDriverFactory();
         factory.setFaultTolerance(FaultTolerance.CHECKED);
