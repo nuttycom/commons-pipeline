@@ -59,11 +59,21 @@ public interface StageContext {
     
     /**
      * This method is used by a stage driver to pass data from one stage to the next.
-     * @returns the feeder for the downstream stage, or {@link Feeder#VOID} if no downstream
+     * @return the feeder for the downstream stage, or {@link Feeder#VOID} if no downstream
      * stage exists.
      * @param stage The stage from which "downstream" will be determined. Ordinarily a Stage implementation
      * will call this method with a reference to itself.
      * @return The {@link Feeder} for the subsequent stage.
      */
     public Feeder getDownstreamFeeder(Stage stage);
+    
+    /**
+     * A StageContext implementation provides a global environment for the
+     * stages being run. This method allows objects in the global environment
+     * to be accessed by the stages running in this context.
+     *
+     * @return the object corresponding to the specified string key, or null
+     * if no such key exists.
+     */
+    public Object getEnv(String key);
 }

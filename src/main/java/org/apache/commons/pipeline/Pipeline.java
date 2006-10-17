@@ -73,6 +73,9 @@ public class Pipeline implements Runnable, StageContext {
     // Feeder used to handle output of final stage
     private Feeder terminalFeeder = Feeder.VOID;
     
+    // Global environment variables
+    private Map<String,Object> env = Collections.synchronizedMap(new HashMap<String,Object>());
+            
     /**
      * Creates and initializes a new Pipeline.
      */
@@ -164,6 +167,23 @@ public class Pipeline implements Runnable, StageContext {
         }
 
         return branches.get(branch).getSourceFeeder();
+    }
+    
+    /**
+     * Global environment accessor method. 
+     *
+     * @return the global environment value corresponding to the specified
+     * key, or null if no such key is found.
+     */
+    public Object getEnv(String key) {
+        return this.env.get(key);
+    }
+    
+    /**
+     * Sets the value corresponding to the specified environment variable key.
+     */
+    public void setEnv(String key, Object value) {
+        this.env.put(key, value);
     }
     
     /**

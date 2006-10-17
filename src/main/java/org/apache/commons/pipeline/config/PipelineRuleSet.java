@@ -94,6 +94,7 @@ import org.xml.sax.Attributes;
  */
 public class PipelineRuleSet extends RuleSetBase {
     private static Class[] addBranchTypes = { String.class, Pipeline.class };
+    private static Class[] setEnvTypes = { String.class, Object.class };
     private List<RuleSet> nestedRuleSets;
     
     /**
@@ -128,12 +129,23 @@ public class PipelineRuleSet extends RuleSetBase {
         digester.addSetProperties("pipeline");
         digester.addRule("pipeline", new PipelineDriverFactoriesRule());
                 
-        // these rules are used to add subchains to the main pipeline
+        //these rules are used to add branches to the main pipeline
         digester.addFactoryCreate("*/branch/pipeline", pipelineFactory);
         digester.addRule("*/branch/pipeline", new CallMethodRule(1, "addBranch", 2, addBranchTypes));
         digester.addCallParam("*/branch/pipeline", 0, "key");
         digester.addCallParam("*/branch/pipeline", 1, 0);
         digester.addRule("*/branch/pipeline", new PipelineDriverFactoriesRule());
+        
+        //rules for adding values to the global pipeline environment        
+        digester.addObjectCreate("*/pipeline/env/object", "java.lang.Object", "className");        
+        digester.addSetProperties("*/pipeline/env/object");
+        digester.addRule("*/pipeline/env/object", new CallMethodRule(1, "setEnv", 2, setEnvTypes));
+        digester.addCallParam("*/pipeline/env/object", 0, "key");
+        digester.addCallParam("*/pipeline/env/object", 1, 0);
+        
+        digester.addRule("*/pipeline/env/value", new CallMethodRule(0, "setEnv", 2, setEnvTypes));
+        digester.addCallParam("*/pipeline/env/value", 0, "key");
+        digester.addCallParam("*/pipeline/env/value", 1);
         
         //this rule is intended to be used to add a StageEventListener to the pipeline.
         digester.addObjectCreate("*/pipeline/listener", "org.apache.commons.pipeline.StageEventListener", "className");

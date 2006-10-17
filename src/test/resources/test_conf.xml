@@ -21,6 +21,10 @@
 <pipeline>
   <listener className="org.apache.commons.pipeline.listener.ObjectProcessedEventCounter"/>
   <driverFactory className="org.apache.commons.pipeline.driver.DedicatedThreadStageDriverFactory" id="f1"/>
+  <env>
+      <object className="java.util.Date" key="testDate"/>
+      <value key="testEnvVar">Hello, World!</value>
+  </env>
 
   <stage className="org.apache.commons.pipeline.stage.FileFinderStage" driverFactoryId="f1"
          filePattern=".*\.java" />
@@ -28,6 +32,11 @@
   <stage className="org.apache.commons.pipeline.stage.LogStage" driverFactoryId="f1" />
                    
   <stage className="org.apache.commons.pipeline.stage.RaiseEventStage" driverFactoryId="f1" />
+  
+  <!--
+  <stage className="org.apache.commons.pipeline.stage.RaiseKeyAvailableEventStage" driverFactoryId="f1" 
+         keyFactoryClass="org.apache.commons.pipeline.opt.KeyFactory$HashKeyFactory"/>
+  -->
   
   <feed>
     <value>src/main/java</value>

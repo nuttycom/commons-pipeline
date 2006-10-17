@@ -38,28 +38,28 @@ public class DigesterPipelineFactoryTest extends AbstractLoggingTestCase {
         super(testName);
     }
     
-    public static junit.framework.Test suite() {        
+    public static junit.framework.Test suite() {
         junit.framework.TestSuite suite = new junit.framework.TestSuite(DigesterPipelineFactoryTest.class);
         
         return suite;
-    }    
+    }
     
     public void testCreatePipeline() throws Exception {
         Log log = LogFactory.getLog(this.getClass());
         URL confURL = this.getClass().getClassLoader().getResource(testResources.getString(keyBase + ".configFile"));
         PipelineFactory factory = new DigesterPipelineFactory(confURL);
-            
-            Pipeline pipeline = factory.createPipeline();
+        
+        Pipeline pipeline = factory.createPipeline();
         assertNotNull("Pipeline exists.", pipeline);
-            
-            int i = 0;
+        
+        int i = 0;
         for (Stage stage : pipeline.getStages()) {
             assertNotNull("Stage is not null.", stage);
             assertEquals(stage.getClass(), Class.forName(testResources.getString(keyBase + ".stage" + i + ".class")));
-                i++;
-            }
-            
-            pipeline.run();
+            i++;
+        }
+        
+        pipeline.run();
         
         boolean eventsRecorded = false;
         assertTrue("Pipeline has at least one listener.", pipeline.getRegisteredListeners().size() > 0);
@@ -68,8 +68,11 @@ public class DigesterPipelineFactoryTest extends AbstractLoggingTestCase {
                 log.info(((ObjectProcessedEventCounter) l).getCounts().size() + " event sources found.");
                 assertTrue("Events were recorded by the ObjectProcessedEventListener.", ((ObjectProcessedEventCounter) l).getCounts().size() > 0);
                 eventsRecorded = true;
-        }
+            }
         }
         assertTrue("Events were raised and properly recorded by the listener.", eventsRecorded);
+        
+        assertNotNull(pipeline.getEnv("testDate"));
+        assertEquals("Hello, World!", pipeline.getEnv("testEnvVar"));
     }
 }
