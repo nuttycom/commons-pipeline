@@ -14,13 +14,16 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
- * Author     : Kris Nuttycombe, National Geophysical Data Center
 -->
 
 <pipeline>
   <listener className="org.apache.commons.pipeline.listener.ObjectProcessedEventCounter"/>
-  <driverFactory className="org.apache.commons.pipeline.driver.DedicatedThreadStageDriverFactory" id="f1"/>
+  
+  <driverFactory className="org.apache.commons.pipeline.driver.DedicatedThreadStageDriverFactory" id="f1">
+      <property propName="queueFactory" className="org.apache.commons.pipeline.util.BlockingQueueFactory$ArrayBlockingQueueFactory"
+                capacity="10" fair="false"/>
+  </driverFactory>
+  
   <env>
       <object className="java.util.Date" key="testDate"/>
       <value key="testEnvVar">Hello, World!</value>
@@ -28,18 +31,25 @@
 
   <stage className="org.apache.commons.pipeline.stage.FileFinderStage" driverFactoryId="f1"
          filePattern=".*\.java" />
-
-  <stage className="org.apache.commons.pipeline.stage.LogStage" driverFactoryId="f1" />
                    
+  <stage className="org.apache.commons.pipeline.stage.LogStage" driverFactoryId="f1" />
+
   <stage className="org.apache.commons.pipeline.stage.RaiseEventStage" driverFactoryId="f1" />
   
-  <!--
-  <stage className="org.apache.commons.pipeline.stage.RaiseKeyAvailableEventStage" driverFactoryId="f1" 
-         keyFactoryClass="org.apache.commons.pipeline.opt.KeyFactory$HashKeyFactory"/>
-  -->
+  <stage className="org.apache.commons.pipeline.stage.RaiseKeyAvailableEventStage" driverFactoryId="f1">
+      <property propName="keyFactory" className="org.apache.commons.pipeline.util.KeyFactory$HashKeyFactory"/>      
+  </stage> 
+         
+  <stage className="org.apache.commons.pipeline.stage.KeyWaitBufferStage" driverFactoryId="f1">
+      <property propName="keyFactory" className="org.apache.commons.pipeline.util.KeyFactory$HashKeyFactory"/>      
+      <property propName="queueFactory" className="org.apache.commons.pipeline.util.BlockingQueueFactory$ArrayBlockingQueueFactory"
+                capacity="10" fair="false"/>
+  </stage>
   
+  <stage className="org.apache.commons.pipeline.stage.LogStage" driverFactoryId="f1" />
+
   <feed>
     <value>src/main/java</value>
-    <value>src/test/java</value>
+    <value>src/test/java</value>    
   </feed>
 </pipeline>
