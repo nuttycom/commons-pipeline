@@ -159,3 +159,18 @@ conventions.
   [className] The class of the object to be created, which must supply a 
               no-argument constructor.
 
+* \<property propName="..." className="..."\>\</property>
+
+  This tag is used to set a non-primitive bean property on the object created
+by the enclosing tag, in a similar fashion to how primitive-valued properties 
+may be set in Digester using XML attributes. This tag constructs an object
+of the specified class, configures its properties based upon the other 
+XML attributes and any nested \<property\> tags, then passes the generated
+object to the appropriate setter method of the object created by the enclosing
+tag.
+
+  [className] The class of the object to be created, which must supply a 
+              no-argument constructor.
+
+  [propName] The name of the bean property to be set with the created object.
+
