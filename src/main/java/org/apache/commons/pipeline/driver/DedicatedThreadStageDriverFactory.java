@@ -1,18 +1,22 @@
 /*
- * Copyright 2005 The Apache Software Foundation
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ * 
  *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+ * 
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.    
+ */ 
+
 
 package org.apache.commons.pipeline.driver;
 
@@ -22,6 +26,7 @@ import org.apache.commons.pipeline.Stage;
 import org.apache.commons.pipeline.StageContext;
 import org.apache.commons.pipeline.StageDriver;
 import org.apache.commons.pipeline.StageDriverFactory;
+import org.apache.commons.pipeline.util.BlockingQueueFactory;
 
 /**
  * This factory is used to create DedicatedThreadStageDriver instances configured
@@ -43,42 +48,20 @@ public class DedicatedThreadStageDriverFactory implements StageDriverFactory {
      */
     public StageDriver createStageDriver(Stage stage, StageContext context) {
         try {
-            return new DedicatedThreadStageDriver(stage, context, queueClass.newInstance(), timeout, faultTolerance);
+            return new DedicatedThreadStageDriver(stage, context, queueFactory.createQueue(), timeout, faultTolerance);
         } catch (Exception e) {
             throw new IllegalStateException("Instantiation of driver failed due to illegal factory state.", e);
         }
     }
-    
-    /**
-     * Holds value of property queueClass.
-     */
-    private Class<? extends BlockingQueue> queueClass = LinkedBlockingQueue.class;
-    
-    /**
-     * Getter for property queueClass.
-     * @return Value of property queueClass.
-     */
-    public Class<? extends BlockingQueue> getQueueClass() {
-        return this.queueClass;
-    }
-    
-    /**
-     * Setter for property queueClass.
-     * @param queueClass New value of property queueClass.
-     */
-    public void setQueueClass(Class<? extends BlockingQueue> queueClass) {
-        if (queueClass == null) throw new IllegalArgumentException("Queue class may not be null.");
-        this.queueClass = queueClass;
-    }
-    
+        
     /**
      * Holds value of property timeout.
      */
     private long timeout = 500;
     
     /**
-     * Timeout for wait to ensure deadlock cannot occur on thread termination.
-     * Default is 500
+     * Timeout (in milliseconds) for queue polling to ensure deadlock cannot 
+     * occur on thread termination. Default value is 500 ms.
      * @return Value of property timeout.
      */
     public long getTimeout() {
@@ -124,5 +107,25 @@ public class DedicatedThreadStageDriverFactory implements StageDriverFactory {
     public void setFaultToleranceLevel(String level) {
         this.faultTolerance = FaultTolerance.valueOf(level);
     }
-    
+
+    /**
+     * Holds value of property queueFactory.
+     */
+    private BlockingQueueFactory<?> queueFactory = new BlockingQueueFactory.LinkedBlockingQueueFactory();
+
+    /**
+     * Getter for property queueFactory.
+     * @return Value of property queueFactory.
+     */
+    public BlockingQueueFactory<?> getQueueFactory() {
+        return this.queueFactory;
+    }
+
+    /**
+     * Setter for property queueFactory.
+     * @param queueFactory New value of property queueFactory.
+     */
+    public void setQueueFactory(BlockingQueueFactory<?> queueFactory) {
+        this.queueFactory = queueFactory;
+    }    
 }
