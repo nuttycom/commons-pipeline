@@ -16,13 +16,12 @@
 
 package org.apache.commons.pipeline.driver;
 
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 
 import org.apache.commons.pipeline.Stage;
 import org.apache.commons.pipeline.StageContext;
 import org.apache.commons.pipeline.StageDriver;
 import org.apache.commons.pipeline.StageDriverFactory;
+import org.apache.commons.pipeline.util.BlockingQueueFactory;
 
 /**
  * This factory is used to create {@link ThreadPoolStageDriver} instances configured
@@ -45,33 +44,32 @@ public class ThreadPoolStageDriverFactory implements StageDriverFactory {
      */
     public StageDriver createStageDriver(Stage stage, StageContext context) {
         try {
-            return new ThreadPoolStageDriver(stage, context, queueClass.newInstance(), timeout, faultTolerance, numThreads);
+            return new ThreadPoolStageDriver(stage, context, queueFactory.createQueue(), timeout, faultTolerance, numThreads);
         } catch (Exception e) {
             throw new IllegalStateException("Instantiation of driver failed due to illegal factory state.", e);
         }
     }
     
     /**
-     * Holds value of property queueClass.
+     * Holds value of property queueFactory.
      */
-    private Class<? extends BlockingQueue> queueClass = LinkedBlockingQueue.class;
-    
+    private BlockingQueueFactory<?> queueFactory = new BlockingQueueFactory.LinkedBlockingQueueFactory();
+
     /**
-     * Getter for property queueClass.
-     * @return Value of property queueClass.
+     * Getter for property queueFactory.
+     * @return Value of property queueFactory.
      */
-    public Class<? extends BlockingQueue> getQueueClass() {
-        return this.queueClass;
+    public BlockingQueueFactory<?> getQueueFactory() {
+        return this.queueFactory;
     }
-    
+
     /**
-     * Setter for property queueClass.
-     * @param queueClass New value of property queueClass.
+     * Setter for property queueFactory.
+     * @param queueFactory New value of property queueFactory.
      */
-    public void setQueueClass(Class<? extends BlockingQueue> queueClass) {
-        if (queueClass == null) throw new IllegalArgumentException("Queue class may not be null.");
-        this.queueClass = queueClass;
-    }
+    public void setQueueFactory(BlockingQueueFactory<?> queueFactory) {
+        this.queueFactory = queueFactory;
+    }    
     
     /**
      * Holds value of property timeout.
