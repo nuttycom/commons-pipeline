@@ -1,0 +1,42 @@
+                    ----------------------
+                    Using Commons-Pipeline
+                    ----------------------
+
+Obtaining Commons-Pipeline
+
+  If you are using Maven (version 2.0 and above) the easiest way to 
+incorporate Commons-Pipeline into your project is to add the following 
+entries in the appropriate sections of your project's pom.xml file: 
+
++---+
+  <repositories>
+    <repository>
+      <id>apache.snapshots</id>
+      <name>Snapshot Repository</name>
+      <url>http://cvs.apache.org/maven-snapshot-repository</url>
+    </repository>
+  </repositories>
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-pipeline</artifactId>
+      <version>1.0-SNAPSHOT</version>
+    </dependency>
+  </dependencies>
++---+
+
+  If you are not using Maven for your project, nightly builds are available
+from {{http://people.apache.org/builds/jakarta-commons/nightly/commons-pipeline/}}.
+
+Usage
+
+  Ordinarily, a processing pipeline will be embedded in an application; however,
+it is also possible to use a simple XML file to configure a pipeline instance
+that can be run directly from the command line with the syntax:
+
+---
+java org.apache.commons.pipeline.config.DigesterPipelineFactory my_pipeline_conf.xml 
+---
+
+  See {{{config_digester.html}Configuration Using Digester}} for how to set up a 
+pipeline configuration file. 

@@ -8,6 +8,7 @@
   <body>
     <menu name="Commons Pipeline">
       <item name="Overview" href="index.html"/>      
+      <item name="Usage" href="usage.html"/>      
       <item name="Configuration using Digester" href="config_digester.html"/>      
       <item name="FAQ" href="faq.html"/>
     </menu>
