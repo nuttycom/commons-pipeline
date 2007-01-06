@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<project name="Maven">
+<project name="Commons Pipeline">
   <bannerRight>
     <name>Jakarta Commons Pipeline</name>
     <src>images/pipeline-logo-white.png</src>
@@ -12,7 +12,5 @@
       <item name="Configuration using Digester" href="config_digester.html"/>      
       <item name="FAQ" href="faq.html"/>
     </menu>
-
-    <menu ref="reports"/>
   </body>
 </project>
