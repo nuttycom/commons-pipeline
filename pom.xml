@@ -1,4 +1,6 @@
-<?xml version="1.0" encoding="UTF-8"?><project>
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.apache.commons</groupId>
@@ -6,14 +8,14 @@
     <version>1-SNAPSHOT</version>
   </parent>
   <artifactId>commons-pipeline</artifactId>
-  <name>Jakarta Commons Pipeline</name>
   <version>1.0-SNAPSHOT</version>
-  <packaging>jar</packaging>
+  <name>Jakarta Commons Pipeline</name>
   <description>
     A framework for constructing pipelined processing systems that support
     concurrent processing of objects in multiple processing stages.
   </description>
-  <url>http://jakarta.apache.org/commons/sandbox/pipeline</url>
+  <url>http://jakarta.apache.org/commons/sandbox/pipeline/</url>
+  <inceptionYear>2004</inceptionYear>
   <developers>
     <developer>
       <id>kjn</id>
@@ -38,9 +40,9 @@
     </contributor>
   </contributors>
   <scm>
-    <connection>scm:svn:http://svn.apache.org/repos/asf/jakarta/commons/sandbox/pipeline/trunk</connection>
-    <developerConnection>scm:svn:https://svn.apache.org/repos/asf/jakarta/commons/sandbox/pipeline/trunk</developerConnection>
-    <url>http://svn.apache.org/repos/asf/jakarta/commons/sandbox/pipeline/trunk</url>
+    <connection>scm:svn:http://svn.apache.org/repos/asf/jakarta/commons/sandbox/pipeline/trunk/</connection>
+    <developerConnection>scm:svn:https://svn.apache.org/repos/asf/jakarta/commons/sandbox/pipeline/trunk/</developerConnection>
+    <url>http://svn.apache.org/repos/asf/jakarta/commons/sandbox/pipeline/trunk/</url>
   </scm>
   <build>
     <testResources>
@@ -59,13 +61,6 @@
     </filters>
     <plugins>
       <plugin>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <configuration>
-          <source>1.5</source>
-          <target>1.5</target>
-        </configuration>
-      </plugin>
-      <plugin>
         <artifactId>maven-site-plugin</artifactId>
         <configuration>
           <locales>en</locales>
@@ -77,7 +72,7 @@
     <repository>
       <id>apache.snapshots</id>
       <name>Snapshot Repository</name>
-      <url>http://cvs.apache.org/maven-snapshot-repository</url>
+      <url>http://people.apache.org/maven-snapshot-repository/</url>
     </repository>
   </repositories>
   <dependencies>
@@ -140,4 +135,10 @@
       <url>scp://people.apache.org/www/jakarta.apache.org/commons/sandbox/pipeline/</url>
     </site>
   </distributionManagement>
+
+  <!-- Compiler source and target JVM (see parent pom) -->
+  <properties>
+    <maven.compile.source>1.5</maven.compile.source>
+    <maven.compile.target>1.5</maven.compile.target>
+  </properties> 
 </project>
