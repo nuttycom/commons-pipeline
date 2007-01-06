@@ -1,12 +1,12 @@
                     ----------------------
-                    Using Commons-Pipeline
+                    Usage
                     ----------------------
 
-Obtaining Commons-Pipeline
+Obtaining Commons Pipeline
 
   If you are using Maven (version 2.0 and above) the easiest way to 
-incorporate Commons-Pipeline into your project is to add the following 
-entries in the appropriate sections of your project's pom.xml file: 
+incorporate Commons Pipeline into your project is to add the following 
+entries in the appropriate sections of your project's <<<pom.xml>>> file: 
 
 +---+
   <repositories>

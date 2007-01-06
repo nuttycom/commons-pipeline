@@ -1,11 +1,11 @@
                     -----------------------------
-                    Commons-Pipeline and Digester
+                    Configuration using Digester
                     -----------------------------
 
-Using Commons-Pipeline with Digester
+Configuration using Digester
 
   A simple and straightforward way of creating a pipeline is to use an XML 
-configuration file. Commons-Pipeline provides a set of Digester rules that can 
+configuration file. Commons Pipeline provides a set of Digester rules that can 
 be used to set up a pipeline based upon such a file.
 
   One important thing to note is that, due to the way that Digester handles 
