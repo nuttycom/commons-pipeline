@@ -14,7 +14,7 @@
     A framework for constructing pipelined processing systems that support
     concurrent processing of objects in multiple processing stages.
   </description>
-  <url>http://jakarta.apache.org/commons/sandbox/pipeline/</url>
+  <url>http://commons.apache.org/sandbox/pipeline/</url>
   <inceptionYear>2004</inceptionYear>
   <developers>
     <developer>
@@ -40,9 +40,9 @@
     </contributor>
   </contributors>
   <scm>
-    <connection>scm:svn:http://svn.apache.org/repos/asf/jakarta/commons/sandbox/pipeline/trunk/</connection>
-    <developerConnection>scm:svn:https://svn.apache.org/repos/asf/jakarta/commons/sandbox/pipeline/trunk/</developerConnection>
-    <url>http://svn.apache.org/repos/asf/jakarta/commons/sandbox/pipeline/trunk/</url>
+    <connection>scm:svn:http://svn.apache.org/repos/asf/commons/sandbox/pipeline/trunk/</connection>
+    <developerConnection>scm:svn:https://svn.apache.org/repos/asf/commons/sandbox/pipeline/trunk/</developerConnection>
+    <url>http://svn.apache.org/repos/asf/commons/sandbox/pipeline/trunk/</url>
   </scm>
   <build>
     <testResources>
@@ -132,7 +132,7 @@
     <site>
       <id>website</id>
       <name>Apache Website</name>
-      <url>scp://people.apache.org/www/jakarta.apache.org/commons/sandbox/pipeline/</url>
+      <url>scp://people.apache.org/www/commons.apache.org/sandbox/pipeline/</url>
     </site>
   </distributionManagement>
 
