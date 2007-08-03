@@ -17,27 +17,22 @@
 
 package org.apache.commons.pipeline;
 
-
 /**
- * This interface represents a data channel into which objects can be fed.
- * Feeders act as intermediaries between stages in a pipeline and the drivers
- * for subsequent stages. Each {@link StageDriver} implementation will
- * ordinarily provide a custom Feeder implementation that integrates receiving
- * objects with its internal stage processing workflow.
+ * This interface specifies a job or set of tasks that are to be run at a 
+ * well-specified points in the pipeline lifecycle. It is intended to be a
+ * means by which third-party plugins can be added to the pipeline framework.
  */
-public interface Feeder {
-    /**
-     * This Feeder implementation provides a standard, no-op sink for objects.
-     * It is useful for situations like the terminus of a pipeline, where
-     * there is nothing to be done with a generated object.
-     */
-    public static final Feeder VOID = new Feeder() {
-        public void feed(Object obj) { }
-    };
+public interface PipelineLifecycleJob {
     
     /**
-     * Feeds the specified object to an underlying receiver.
-     * @param obj The object being fed to the receiver.
+     * This is called by the pipeline engine once the pipeline is fully configured,
+     * just prior to stage driver start.
      */
-    public void feed(Object obj);
+    public void onStart(Pipeline pipeline);
+    
+    /**
+     * This is called by the pipeline engine after all data processing has completed.
+     */
+    public void onFinish(Pipeline pipeline);
+    
 }

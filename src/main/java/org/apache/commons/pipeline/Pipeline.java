@@ -25,8 +25,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.commons.pipeline.driver.SynchronousStageDriver;
 import org.apache.commons.pipeline.validation.PipelineValidator;
 import org.apache.commons.pipeline.validation.ValidationException;
 import org.apache.commons.pipeline.validation.ValidationFailure;
@@ -49,10 +48,10 @@ public class Pipeline implements Runnable, StageContext {
     public static final String MAIN_BRANCH = "main";
     
     //The logger used for reporting by this pipeline
-    private final Log log = LogFactory.getLog(Pipeline.class);
+    //private final Log log = LogFactory.getLog(Pipeline.class);
     
     // List of stages in the pipeline, encapsulated in the drivers
-    // that will be used to run them.
+    // that will be used to onStart them.
     private final LinkedList<StageDriver> drivers;
     private final Map<Stage, StageDriver> driverMap;
     
@@ -76,7 +75,10 @@ public class Pipeline implements Runnable, StageContext {
     
     // Global environment variables
     private Map<String,Object> env = Collections.synchronizedMap(new HashMap<String,Object>());
-            
+    
+    // List of jobs to be run at defined points in pipeline lifecycle
+    private Collection<PipelineLifecycleJob> lifecycleJobs = new ArrayList<PipelineLifecycleJob>();
+    
     /**
      * Creates and initializes a new Pipeline.
      */
@@ -89,18 +91,14 @@ public class Pipeline implements Runnable, StageContext {
     }
     
     /**
-     * Adds a {@link StageEventListener} to the pipline that will be notified by calls
-     * to {@link Stage#raise(StageEvent)}.
-     * @param listener The listener to be notified.
+     * {@inheritDoc}
      */
     public void registerListener(StageEventListener listener) {
         listeners.add(listener);
     }
     
     /**
-     * Returns the collection of {@link StageEventListener}s registered with the
-     * context.
-     * @return The collection of registered listeners.
+     * {@inheritDoc}
      */
     public Collection<StageEventListener> getRegisteredListeners() {
         return this.listeners;
@@ -136,10 +134,7 @@ public class Pipeline implements Runnable, StageContext {
     }
     
     /**
-     * This method is used by a stage driver to pass data from one stage to the next.
-     * @return the feeder for the downstream stage, or null if no downstream
-     * stage exists.
-     * @param stage the stage for which the downstream feeder will be retrieved
+     * {@inheritDoc}
      */
     public Feeder getDownstreamFeeder(Stage stage) {
         if (stage == null) throw new IllegalArgumentException("Unable to look up downstream feeder for null stage.");
@@ -158,23 +153,18 @@ public class Pipeline implements Runnable, StageContext {
     }
     
     /**
-     * Look up and return the source feeder for the specified pipeline branch.
-     * @param branch the string identifier of the branch for which a feeder will be returned
-     * @return the feeder for the specified branch
+     * {@inheritDoc}
      */
     public Feeder getBranchFeeder(String branch) {
         if (!getBranches().containsKey(branch)) {
             throw new IllegalStateException("Unable to find branch in pipeline: '" + branch + "'");
         }
-
+        
         return branches.get(branch).getSourceFeeder();
     }
     
     /**
-     * Global environment accessor method. 
-     *
-     * @return the global environment value corresponding to the specified
-     * key, or null if no such key is found.
+     * {@inheritDoc}
      */
     public Object getEnv(String key) {
         return this.env.get(key);
@@ -322,6 +312,13 @@ public class Pipeline implements Runnable, StageContext {
     }
     
     /**
+     * Adds a job to be onStart on startup to the pipeline.
+     */
+    public void addLifecycleJob(PipelineLifecycleJob job) {
+        this.lifecycleJobs.add(job);
+    }
+    
+    /**
      * This method iterates over the stages in the pipeline, looking up a
      * {@link StageDriver} for each stage and using that driver to start the stage.
      * Startups may occur sequentially or in parallel, depending upon the stage driver
@@ -331,6 +328,7 @@ public class Pipeline implements Runnable, StageContext {
      * @throws org.apache.commons.pipeline.StageException Thrown if there is an error during pipeline startup
      */
     public void start() throws StageException {
+        for (PipelineLifecycleJob job : lifecycleJobs) job.onStart(this);
         for (StageDriver driver: this.drivers) driver.start();
         for (Pipeline branch : branches.values()) branch.start();
     }
@@ -346,13 +344,9 @@ public class Pipeline implements Runnable, StageContext {
      * @throws org.apache.commons.pipeline.StageException Thrown if there is an unhandled error during stage shutdown
      */
     public void finish() throws StageException {
-        for (StageDriver driver: this.drivers){
-            driver.finish();
-        }
-        
-        for (Pipeline pipeline : branches.values()) {
-            pipeline.finish();
-        }
+        for (StageDriver driver: this.drivers) driver.finish();
+        for (Pipeline pipeline : branches.values()) pipeline.finish();
+        for (PipelineLifecycleJob job : lifecycleJobs) job.onFinish(this);
     }
     
     /**
@@ -384,7 +378,7 @@ public class Pipeline implements Runnable, StageContext {
     public void setValidator(PipelineValidator validator) {
         this.validator = validator;
     }
-
+    
     /**
      * Returns the parent of this pipeline, if it is a branch
      * @return parent Pipeline, or null if this is the main pipeline
