@@ -22,6 +22,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.apache.commons.pipeline.Stage;
+
 /**
  * This marker annotation indicates that the {@link Stage} produces the same type
  * of object that is consumed (or any subtype thereof). This is used to allow

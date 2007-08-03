@@ -22,6 +22,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.apache.commons.pipeline.Stage;
+
 /**
  * This annotation is used to describe the objects produced by a {@link Stage}.
  * If a stage produces the same types of objects that it consumes, it should

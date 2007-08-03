@@ -17,7 +17,6 @@
 
 package org.apache.commons.pipeline.validation;
 
-import java.util.Set;
 import org.apache.commons.pipeline.Stage;
 
 /**

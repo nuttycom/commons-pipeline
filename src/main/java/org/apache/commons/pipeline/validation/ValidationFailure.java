@@ -17,7 +17,7 @@
 
 package org.apache.commons.pipeline.validation;
 
-import org.apache.commons.pipeline.*;
+import org.apache.commons.pipeline.Stage;
 
 /**
  * This class is used to store a collection of information about a particular 

@@ -22,6 +22,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.apache.commons.pipeline.Stage;
+
 /**
  * This annotation is used to describe the production of a {@link Stage} 
  * for a specific branch pipeline.
