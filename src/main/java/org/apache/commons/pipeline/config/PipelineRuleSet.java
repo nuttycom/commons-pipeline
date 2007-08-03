@@ -22,9 +22,19 @@ package org.apache.commons.pipeline.config;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.apache.commons.beanutils.BeanUtils;
-import org.apache.commons.digester.*;
-import org.apache.commons.pipeline.*;
+import org.apache.commons.digester.AbstractObjectCreationFactory;
+import org.apache.commons.digester.CallMethodRule;
+import org.apache.commons.digester.Digester;
+import org.apache.commons.digester.ObjectCreationFactory;
+import org.apache.commons.digester.Rule;
+import org.apache.commons.digester.RuleSet;
+import org.apache.commons.digester.RuleSetBase;
+import org.apache.commons.pipeline.Pipeline;
+import org.apache.commons.pipeline.Stage;
+import org.apache.commons.pipeline.StageDriver;
+import org.apache.commons.pipeline.StageDriverFactory;
 import org.xml.sax.Attributes;
 
 /**
@@ -163,6 +173,11 @@ public class PipelineRuleSet extends RuleSetBase {
         digester.addObjectCreate("*/driverFactory", "org.apache.commons.pipeline.StageDriverFactory", "className");
         digester.addSetProperties("*/driverFactory");
         digester.addSetNext("*/driverFactory", "setWrappedSDF", "org.apache.commons.pipeline.StageDriverFactory");
+        
+        //rules for adding lifecycle jobs
+        digester.addObjectCreate("*/pipeline/lifecycleJob", "org.apache.commons.pipeline.PipelineLifecycleJob", "className");
+        digester.addSetProperties("*/pipeline/lifecycleJob");
+        digester.addSetNext("*/pipeline/lifecycleJob", "addLifecycleJob", "org.apache.commons.pipeline.PipelineLifecycleJob");
         
         //rules for setting an object property on the next-to-top object on the stack
         //similar to setNestedPropertiesRule
