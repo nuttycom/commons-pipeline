@@ -17,7 +17,6 @@
 
 package org.apache.commons.pipeline;
 
-import java.util.Map;
 
 /**
  * Simple factory interface for creating pipelines. This interface is commonly implemented
