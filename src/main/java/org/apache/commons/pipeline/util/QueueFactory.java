@@ -26,6 +26,8 @@ import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import org.apache.commons.pipeline.StageDriver;
+
 /**
  * Many {@link StageDriver} implementations require for one or more queues
  * to be created. This interface provides a consistent API for factories used
@@ -86,10 +88,10 @@ public interface QueueFactory<T> {
                 if (this.initialContents == null || this.initialContents.isEmpty()) {
                     return new PriorityQueue<T>(initialCapacity);
                 } else {
-                    return new PriorityQueue(this.initialContents);
+                    return new PriorityQueue<T>(this.initialContents);
                 }
             } else {
-                PriorityQueue queue = new PriorityQueue<T>(initialCapacity, comparator);
+                PriorityQueue<T> queue = new PriorityQueue<T>(initialCapacity, comparator);
                 queue.addAll(this.initialContents);
                 return queue;
             }

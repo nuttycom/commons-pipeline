@@ -28,6 +28,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.SynchronousQueue;
 
+import org.apache.commons.pipeline.StageDriver;
+
 /**
  * Many {@link StageDriver} implementations require for one or more queues
  * to be created. This interface provides a consistent API for factories used
@@ -39,7 +41,7 @@ public interface BlockingQueueFactory<T> extends QueueFactory<T> {
     public static class ArrayBlockingQueueFactory<T> extends AbstractQueueFactory<T> implements BlockingQueueFactory<T> {
         public ArrayBlockingQueue<T> createQueue() {
             if (this.initialContents == null || this.initialContents.isEmpty()) {
-                return new ArrayBlockingQueue(this.capacity, this.fair);
+                return new ArrayBlockingQueue<T>(this.capacity, this.fair);
             } else {
                 if (this.initialContents.size() > this.capacity) {
                     throw new IllegalStateException("The number of elements in the initial contents of the queue to be created exceeds its capacity.");
@@ -151,7 +153,7 @@ public interface BlockingQueueFactory<T> extends QueueFactory<T> {
                     return new PriorityBlockingQueue<T>(this.initialContents);
                 }
             } else {
-                PriorityBlockingQueue queue = new PriorityBlockingQueue<T>(initialCapacity, comparator);
+                PriorityBlockingQueue<T> queue = new PriorityBlockingQueue<T>(initialCapacity, comparator);
                 if ( !(this.initialContents == null || this.initialContents.isEmpty()) ) {
                     queue.addAll(this.initialContents);
                 }
