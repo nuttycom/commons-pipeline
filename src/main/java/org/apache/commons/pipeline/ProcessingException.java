@@ -21,7 +21,7 @@ import org.apache.commons.pipeline.StageDriver.State;
 
 /**
  * This exception class is used to store detailed information about
- * a failure in the processing step of a stage including the failing data, 
+ * a failure in the processing step of a stage including the failing data,
  * the driver state at the time of failure, and any exceptions encountered.
  */
 public class ProcessingException extends StageException {
@@ -30,7 +30,7 @@ public class ProcessingException extends StageException {
     
     /**
      * Creates a new instance of ProcessingException
-     * 
+     *
      * @param data The object which was not able to be processed.
      * @param throwable The exception that occurred.
      */
@@ -38,15 +38,20 @@ public class ProcessingException extends StageException {
         super(stage, cause);
         this.data = data;
         this.driverState = driverState;
-    }            
+    }
     
-    /** Returns the data
-     *@return The object which was not able to be processed.
+    /**
+     * Returns the object that was being processed at the time of failure.
+     * @return The object which was not able to be processed.
      */
     public Object getData(){
         return this.data;
-    }    
+    }
     
+    /**
+     * Returns the saved driver state at the time of processing failure.
+     * @return the driver state at the time of processing failure.
+     */
     public State getDriverState() {
         return this.driverState;
     }
