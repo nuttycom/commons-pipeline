@@ -27,9 +27,9 @@ package org.apache.commons.pipeline;
  *
  * <p>In order to guarantee that StageDriverFactory instances can be used
  * effectively in configuration frameworks, each StageDriverFactory implementation
- * <em>must</em> provide a no-argument constructor.
+ * <em>must</em> provide a no-argument constructor.</p>
  */
-public interface StageDriverFactory {
+public interface StageDriverFactory<T extends StageDriver> {
     /**
      * This method is used to create a driver that will run the specified stage
      * in the specified context.
@@ -37,5 +37,5 @@ public interface StageDriverFactory {
      * @param context The context in which the stage will be run
      * @return The newly created driver
      */
-    public StageDriver createStageDriver(Stage stage, StageContext context);
+    public T createStageDriver(Stage stage, StageContext context);
 }
