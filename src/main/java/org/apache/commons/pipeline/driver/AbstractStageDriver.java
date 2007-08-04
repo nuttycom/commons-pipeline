@@ -37,7 +37,18 @@ public abstract class AbstractStageDriver implements StageDriver {
     /**
      * The context for the stage being run
      */
-    protected StageContext context;
+    protected StageContext context;    
+    
+    /**
+     * The current state of processing. In most drivers, this is used for
+     * thread control.
+     */
+    protected volatile State currentState = State.STOPPED;    
+            
+    /**
+     * Enumerated value indicating the fault tolerance level of the StageDriver.
+     */
+    protected FaultTolerance faultTolerance = FaultTolerance.NONE;
     
     /**
      * List of processing failures that have occurred.
@@ -56,10 +67,21 @@ public abstract class AbstractStageDriver implements StageDriver {
      * @param context The context in which to run the stage
      */
     public AbstractStageDriver(Stage stage, StageContext context) {
+        this(stage, context, FaultTolerance.NONE);
+    }
+    
+    /**
+     * Creates a StageDriver for the specified stage.
+     * 
+     * @param stage The stage for which the driver will be created
+     * @param context The context in which to run the stage
+     */
+    public AbstractStageDriver(Stage stage, StageContext context, FaultTolerance faultTolerance) {
         if (stage == null) throw new IllegalArgumentException("Stage may not be null.");
         if (context == null) throw new IllegalArgumentException("Context may not be null.");
         this.stage = stage;
         this.context = context;
+        this.faultTolerance = faultTolerance;
     }
     
     /**
@@ -76,14 +98,48 @@ public abstract class AbstractStageDriver implements StageDriver {
      * in which the driver is being run and the managed stage.
      * @return the Feeder used to feed objects to the managed stage for processing.
      */
-    public abstract Feeder getFeeder();
+    public abstract Feeder getFeeder();    
+
+    /**
+     * Return the current state of stage processing.
+     * @return the current state of processing
+     */
+    public State getState() {
+        return this.currentState;
+    }
     
     /**
-     * Returns the current state of stage processing.
-     * @return The current state
+     * Atomically tests to determine whether or not the driver is in the one of
+     * the specified states.
      */
-    public abstract State getState();
-
+    protected synchronized boolean isInState(State... states) {
+        for (State state : states) if (state == currentState) return true;
+        return false;
+    }
+    
+    /**
+     * Set the current state of stage processing and notify any listeners
+     * that may be waiting on a state change.
+     */
+    protected synchronized void setState(State nextState) {
+        this.currentState = nextState;
+        this.notifyAll();
+    }
+    
+    /**
+     * This method performs an atomic conditional state transition change
+     * to the value specified by the nextState parameter if and only if the
+     * current state is equal to the test state.
+     */
+    protected synchronized boolean testAndSetState(State testState, State nextState) {
+        if (currentState == testState) {
+            setState(nextState);
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
     /**
      * This method is used to start the driver, run the 
      * {@link Stage#preprocess() preprocess()} method of the attached stage
@@ -103,13 +159,25 @@ public abstract class AbstractStageDriver implements StageDriver {
     public abstract void finish() throws StageException;
 
     /**
-     * Returns a list of unrecoverable errors that occurred during stage
-     * processing.
-     * @return A list of unrecoverable errors that occurred during stage processing.
+     * Sets the failure tolerance flag for the worker thread. If faultTolerance
+     * is set to CHECKED, {@link StageException StageException}s thrown by
+     * the {@link Stage#process(Object)} method will not interrupt queue
+     * processing, but will simply be logged with a severity of ERROR.
+     * If faultTolerance is set to ALL, runtime exceptions will also be
+     * logged and otherwise ignored.
+     * @param faultTolerance the flag value
      */
-    public List<Throwable> getFatalErrors() {
-        return this.errors;
+    public final void setFaultTolerance(FaultTolerance faultTolerance) {
+        this.faultTolerance = faultTolerance;
     }
+    
+    /**
+     * Getter for property faultTolerant.
+     * @return Value of property faultTolerant.
+     */
+    public final FaultTolerance getFaultTolerance() {
+        return this.faultTolerance;
+    }    
     
     /**
      * Store a fatal error.
@@ -118,15 +186,14 @@ public abstract class AbstractStageDriver implements StageDriver {
     protected void recordFatalError(Throwable error) {
         this.errors.add(error);
     }
-    
+
     /**
-     * Returns a list of errors that occurred while processing data objects,
-     * along with the objects that were being processed when the errors
-     * were generated.
-     * @return The list of non-fatal processing errors.
+     * Returns a list of unrecoverable errors that occurred during stage
+     * processing.
+     * @return A list of unrecoverable errors that occurred during stage processing.
      */
-    public List<ProcessingException> getProcessingExceptions() {
-        return this.processingExceptions;
+    public List<Throwable> getFatalErrors() {
+        return this.errors;
     }
     
     /**
@@ -138,4 +205,14 @@ public abstract class AbstractStageDriver implements StageDriver {
         ProcessingException ex = new ProcessingException(this.stage, error, data, this.getState());  
         this.processingExceptions.add(ex);
     }    
+    
+    /**
+     * Returns a list of errors that occurred while processing data objects,
+     * along with the objects that were being processed when the errors
+     * were generated.
+     * @return The list of non-fatal processing errors.
+     */
+    public List<ProcessingException> getProcessingExceptions() {
+        return this.processingExceptions;
+    }
 }

@@ -6,16 +6,16 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
- * under the License.    
- */ 
+ * under the License.
+ */
 
 package org.apache.commons.pipeline.driver;
 
@@ -41,40 +41,37 @@ import static org.apache.commons.pipeline.driver.FaultTolerance.*;
  * to process objects from an input queue.
  */
 public class ThreadPoolStageDriver extends AbstractStageDriver {
+    // logger for the class
     private final Log log = LogFactory.getLog(ThreadPoolStageDriver.class);
     
-    //wait timeout to ensure deadlock cannot occur on thread termination
+    // wait timeout to ensure deadlock cannot occur on thread termination
     private long timeout;
     
-    //flag describing whether or not the driver is fault tolerant
-    private FaultTolerance faultTolerance = FaultTolerance.NONE;
+    // signal telling threads to start polling queue
+    private final CountDownLatch startSignal;
     
-    //signal telling threads to start polling queue
-    final private CountDownLatch startSignal;
-    
-    //signal threads use to tell driver they have finished
-    final private CountDownLatch doneSignal;
+    // signal threads use to tell driver they have finished
+    private final CountDownLatch doneSignal;
     
     // number of threads polling queue
-    private int numThreads = 1;
+    private final int numThreads;
     
-    //queue to hold data to be processed
-    private BlockingQueue queue;
-    
-    //current state of thread processing
-    private volatile State currentState = State.STOPPED;
+    // queue to hold data to be processed
+    private final BlockingQueue queue;
     
     //feeder used to feed data to this stage's queue
     private final Feeder feeder = new Feeder() {
         public void feed(Object obj) {
             if (log.isDebugEnabled()) log.debug(obj + " is being fed to stage " + stage
                     + " (" + ThreadPoolStageDriver.this.queue.remainingCapacity() + " available slots in queue)");
+            
             try {
                 ThreadPoolStageDriver.this.queue.put(obj);
             } catch (InterruptedException e) {
                 throw new IllegalStateException("Unexpected interrupt while waiting for space to become available for object "
                         + obj + " in queue for stage " + stage, e);
             }
+            
             synchronized(ThreadPoolStageDriver.this) {
                 ThreadPoolStageDriver.this.notifyAll();
             }
@@ -103,7 +100,7 @@ public class ThreadPoolStageDriver extends AbstractStageDriver {
             long timeout,
             FaultTolerance faultTolerance,
             int numThreads) {
-        super(stage, context);
+        super(stage, context, faultTolerance);
         this.numThreads = numThreads;
         
         this.startSignal = new CountDownLatch(1);
@@ -111,7 +108,6 @@ public class ThreadPoolStageDriver extends AbstractStageDriver {
         
         this.queue = queue;
         this.timeout = timeout;
-        this.faultTolerance = faultTolerance;
     }
     
     /**
@@ -146,13 +142,6 @@ public class ThreadPoolStageDriver extends AbstractStageDriver {
             startSignal.countDown();
             
             log.debug("Worker threads for stage " + stage + " started.");
-            
-            //wait to ensure that the stage starts up correctly
-            try {
-                while ( !(this.currentState == RUNNING || this.currentState == ERROR) ) this.wait();
-            } catch (InterruptedException e) {
-                throw new StageException(this.getStage(), "Worker thread unexpectedly interrupted while waiting for thread startup.", e);
-            }
         } else {
             throw new IllegalStateException("Attempt to start driver in state " + this.currentState);
         }
@@ -160,7 +149,11 @@ public class ThreadPoolStageDriver extends AbstractStageDriver {
     
     /**
      * Causes processing to shut down gracefully. Waits until all worker threads
-     * have completed.
+     * have completed. It is important that this method be called only after
+     * the completion of execution of finish() in the driver for the prior
+     * stage; parallel finish calls can cause the stage to shut down before
+     * all prior stages have finished processing.
+     *
      * @throws org.apache.commons.pipeline.StageException Thrown if the driver is in an illegal state for shutdown.
      */
     public synchronized void finish() throws StageException {
@@ -169,6 +162,9 @@ public class ThreadPoolStageDriver extends AbstractStageDriver {
         }
         
         try {
+            //it may be the case that finish() is called when the driver is still in the process
+            //of starting up, so it is necessary to wait to enter the running state before
+            //a stop can be requested
             while ( !(this.currentState == RUNNING || this.currentState == ERROR) ) this.wait();
             
             //ask the worker threads to shut down
@@ -176,19 +172,27 @@ public class ThreadPoolStageDriver extends AbstractStageDriver {
             
             if (log.isDebugEnabled()) log.debug("Waiting for worker threads to stop for stage " + stage + ".");
             doneSignal.await();
+            if (log.isDebugEnabled()) log.debug("Worker threads for stage " + stage + " halted");
             
-            if (log.isDebugEnabled()) log.debug("Postprocessing stage " + stage + "...");
-            ThreadPoolStageDriver.this.stage.postprocess();
-            if (log.isDebugEnabled()) log.debug("Postprocessing for stage " + stage + " complete.");
-            
-            //do not transition into finished state if an error has occurred
+            //transition into finished state (not used internally?)
             testAndSetState(STOP_REQUESTED, FINISHED);
             
-            while ( !(this.currentState == FINISHED || this.currentState == ERROR) ) this.wait();
+            //do not run postprocessing if the driver is in an error state
+            if (this.currentState != ERROR) {
+                if (log.isDebugEnabled()) log.debug("Postprocessing stage " + stage + "...");
+                this.stage.postprocess();
+                if (log.isDebugEnabled()) log.debug("Postprocessing for stage " + stage + " complete.");
+            }
             
-            log.debug("Worker threads for stage " + stage + " halted");
+            //the following lines appear to be artifacts of copy-and-paste from
+            //DedicatedThreadStageDriver.
+//            //do not transition into finished state if an error has occurred
+//            testAndSetState(STOP_REQUESTED, FINISHED);
+//
+//            while ( !(this.currentState == FINISHED || this.currentState == ERROR) ) this.wait();
+            
         } catch (StageException e) {
-            log.error("An error occurred during postprocess for stage " + stage , e);
+            log.error("An error occurred during postprocessing of stage " + stage , e);
             recordFatalError(e);
             setState(ERROR);
         } catch (InterruptedException e) {
@@ -199,82 +203,31 @@ public class ThreadPoolStageDriver extends AbstractStageDriver {
             if (log.isDebugEnabled()) log.debug("Stage " + stage + " released.");
         }
         
-        setState(STOPPED);
+        testAndSetState(FINISHED, STOPPED);
     }
     
     /**
-     * Return the current state of stage processing.
-     * @return the current state of processing
+     * Get the size of the queue used by this StageDriver.
+     * @return the queue capacity
      */
-    public StageDriver.State getState() {
-        return this.currentState;
+    public int getQueueSize() {
+        return this.queue.size() + this.queue.remainingCapacity();
     }
     
     /**
-     * Atomically tests to determine whether or not the driver is in the one of
-     * the specified states.
+     * Get the timeout value (in milliseconds) used by this StageDriver on
+     * thread termination.
+     * @return the timeout setting in milliseconds
      */
-    private synchronized boolean isInState(State... states) {
-        for (State state : states) if (state == currentState) return true;
-        return false;
+    public long getTimeout() {
+        return this.timeout;
     }
     
     /**
-     * Set the current state of stage processing and notify any listeners
-     * that may be waiting on a state change.
+     * Returns the number of threads allocated to the thread pool.
      */
-    private synchronized void setState(State nextState) {
-        if (log.isDebugEnabled()) log.debug("State change for " + stage + ": " + this.currentState + " -> " + nextState);
-        this.currentState = nextState;
-        this.notifyAll();
-    }
-    
-    /**
-     * This method performs an atomic conditional state transition change
-     * to the value specified by the nextState parameter if and only if the
-     * current state is equal to the test state.
-     */
-    private synchronized boolean testAndSetState(State testState, State nextState) {
-        if (currentState == testState) {
-            setState(nextState);
-            return true;
-        } else {
-            return false;
-        }
-    }
-    
-    /**
-     * Sets the failure tolerance flag for the worker thread. If faultTolerance
-     * is set to CHECKED, {@link StageException StageException}s thrown by
-     * the {@link Stage#process(Object)} method will not interrupt queue
-     * processing, but will simply be logged with a severity of ERROR.
-     * If faultTolerance is set to ALL, runtime exceptions will also be
-     * logged and otherwise ignored.
-     * @param faultTolerance the flag value
-     */
-    public final void setFaultTolerance(String faultTolerance) {
-        this.faultTolerance = FaultTolerance.valueOf(faultTolerance);
-    }
-    
-    /**
-     * Sets the failure tolerance flag for the worker thread. If faultTolerance
-     * is set to CHECKED, {@link StageException StageException}s thrown by
-     * the {@link Stage#process(Object)} method will not interrupt queue
-     * processing, but will simply be logged with a severity of ERROR.
-     * If faultTolerance is set to ALL, runtime exceptions will also be
-     * logged and otherwise ignored.
-     * @param faultTolerance the flag value
-     */
-    public final void setFaultTolerance(FaultTolerance faultTolerance) {
-        this.faultTolerance = faultTolerance;
-    }
-    
-    /**
-     * Getter for property faultTolerant.
-     * @return Value of property faultTolerant.
-     */
-    public FaultTolerance getFaultTolerance() {
-        return this.faultTolerance;
+    public int getNumThreads() {
+        return numThreads;
     }
     
     /*********************************
@@ -304,7 +257,7 @@ public class ThreadPoolStageDriver extends AbstractStageDriver {
         LatchWorkerThread(int threadID) {
             this.setUncaughtExceptionHandler(workerThreadExceptionHandler);
             this.threadID = threadID;
-        }        
+        }
         
         public final void run() {
             try {
@@ -337,7 +290,7 @@ public class ThreadPoolStageDriver extends AbstractStageDriver {
                 recordFatalError(e);
                 setState(ERROR);
             } catch (InterruptedException e) {
-                log.error("Stage " + stage + " (threadID: " + threadID + ") interrupted while waiting for barrier",e);
+                log.error("Stage " + stage + " (threadID: " + threadID + ") interrupted while waiting for barrier", e);
                 recordFatalError(e);
                 setState(ERROR);
             } finally {
@@ -347,29 +300,5 @@ public class ThreadPoolStageDriver extends AbstractStageDriver {
                 }
             }
         }
-    }
-    
-    /**
-     * Get the size of the queue used by this StageDriver.
-     * @return the queue capacity
-     */
-    public int getQueueSize() {
-        return this.queue.size() + this.queue.remainingCapacity();
-    }
-    
-    /**
-     * Get the timeout value (in milliseconds) used by this StageDriver on
-     * thread termination.
-     * @return the timeout setting in milliseconds
-     */
-    public long getTimeout() {
-        return this.timeout;
-    }
-    
-    /**
-     * Returns the number of threads allocated to the thread pool.
-     */
-    public int getNumThreads() {
-        return numThreads;
-    }
+    }    
 }

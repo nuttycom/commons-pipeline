@@ -45,17 +45,11 @@ public class DedicatedThreadStageDriver extends AbstractStageDriver {
     //poll timeout to ensure deadlock cannot occur on thread termination
     private long timeout;
     
-    //flag describing whether or not the driver is fault tolerant
-    private FaultTolerance faultTolerance = FaultTolerance.NONE;
-    
     //thread responsible for stage processing
     private Thread workerThread;
     
     //queue to hold data to be processed
-    private BlockingQueue queue;
-    
-    //current state of thread processing
-    private volatile State currentState = State.STOPPED;
+    private BlockingQueue queue;    
     
     //feeder used to feed data to this stage's queue
     private final Feeder feeder = new Feeder() {
@@ -92,10 +86,9 @@ public class DedicatedThreadStageDriver extends AbstractStageDriver {
      * ({@link Stage#release()} will be called.)
      */
     public DedicatedThreadStageDriver(Stage stage, StageContext context, BlockingQueue queue, long timeout, FaultTolerance faultTolerance) {
-        super(stage, context);
+        super(stage, context, faultTolerance);
         this.queue = queue;
         this.timeout = timeout;
-        this.faultTolerance = faultTolerance;
     }
     
     /**
@@ -156,81 +149,6 @@ public class DedicatedThreadStageDriver extends AbstractStageDriver {
         setState(STOPPED);
     }
     
-    /**
-     * Return the current state of stage processing.
-     * @return the current state of processing
-     */
-    public StageDriver.State getState() {
-        return this.currentState;
-    }
-    
-    /**
-     * Atomically tests to determine whether or not the driver is in the one of
-     * the specified states.
-     */
-    private synchronized boolean isInState(State... states) {
-        for (State state : states) if (state == currentState) return true;
-        return false;
-    }
-    
-    /**
-     * Set the current state of stage processing and notify any listeners
-     * that may be waiting on a state change.
-     */
-    private synchronized void setState(State nextState) {
-        if (log.isDebugEnabled()) log.debug("State change for " + stage + ": " + this.currentState + " -> " + nextState);
-        this.currentState = nextState;
-        this.notifyAll();
-    }
-    
-    /**
-     * This method performs an atomic conditional state transition change
-     * to the value specified by the nextState parameter if and only if the
-     * current state is equal to the test state.
-     */
-    private synchronized boolean testAndSetState(State testState, State nextState) {
-        if (currentState == testState) {
-            setState(nextState);
-            return true;
-        } else {
-            return false;
-        }
-    }
-    
-    /**
-     * Sets the failure tolerance flag for the worker thread. If faultTolerance
-     * is set to CHECKED, {@link StageException StageException}s thrown by
-     * the {@link Stage#process(Object)} method will not interrupt queue
-     * processing, but will simply be logged with a severity of ERROR.
-     * If faultTolerance is set to ALL, runtime exceptions will also be
-     * logged and otherwise ignored.
-     * @param faultTolerance the flag value
-     */
-    public final void setFaultTolerance(String faultTolerance) {
-        this.faultTolerance = FaultTolerance.valueOf(faultTolerance);
-    }
-    
-    /**
-     * Sets the failure tolerance flag for the worker thread. If faultTolerance
-     * is set to CHECKED, {@link StageException StageException}s thrown by
-     * the {@link Stage#process(Object)} method will not interrupt queue
-     * processing, but will simply be logged with a severity of ERROR.
-     * If faultTolerance is set to ALL, runtime exceptions will also be
-     * logged and otherwise ignored.
-     * @param faultTolerance the flag value
-     */
-    public final void setFaultTolerance(FaultTolerance faultTolerance) {
-        this.faultTolerance = faultTolerance;
-    }
-    
-    /**
-     * Getter for property faultTolerant.
-     * @return Value of property faultTolerant.
-     */
-    public FaultTolerance getFaultTolerance() {
-        return this.faultTolerance;
-    }
-    
     /*********************************
      * WORKER THREAD IMPLEMENTATIONS *
      *********************************/
@@ -279,6 +197,7 @@ public class DedicatedThreadStageDriver extends AbstractStageDriver {
                         Object obj = queue.poll(timeout, TimeUnit.MILLISECONDS);
                         if (obj == null) {
                             if (currentState == STOP_REQUESTED) break running;
+                            //else continue running;
                         } else {
                             try {
                                 stage.process(obj);

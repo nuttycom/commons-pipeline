@@ -40,6 +40,27 @@ public class SynchronousStageDriverFactory implements StageDriverFactory {
      * @return the newly created and configured driver
      */
     public StageDriver createStageDriver(Stage stage, StageContext context) {
-        return new SynchronousStageDriver(stage, context);
+        return new SynchronousStageDriver(stage, context, this.faultTolerance);
     }    
+
+    /**
+     * Holds value of property faultTolerance. Default value is {@link FaultTolerance.NONE}.
+     */
+    private FaultTolerance faultTolerance = FaultTolerance.NONE;
+
+    /**
+     * Getter for property faultTolerance.
+     * @return Value of property faultTolerance.
+     */
+    public FaultTolerance getFaultTolerance() {
+        return this.faultTolerance;
+    }
+
+    /**
+     * Setter for property faultTolerance.
+     * @param faultTolerance New value of property faultTolerance.
+     */
+    public void setFaultTolerance(FaultTolerance faultTolerance) {
+        this.faultTolerance = faultTolerance;
+    }
 }

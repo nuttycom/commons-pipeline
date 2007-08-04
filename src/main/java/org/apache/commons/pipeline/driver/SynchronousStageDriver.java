@@ -23,22 +23,17 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.pipeline.Feeder;
 import org.apache.commons.pipeline.Stage;
-import org.apache.commons.pipeline.driver.AbstractStageDriver;
 import org.apache.commons.pipeline.StageException;
 import org.apache.commons.pipeline.StageContext;
 import static org.apache.commons.pipeline.StageDriver.State.*;
+import org.apache.commons.pipeline.StageDriver.State;
+import static org.apache.commons.pipeline.driver.FaultTolerance.*;
 
 /**
  * This is a non-threaded version of the AbstractStageDriver.
  */
 public class SynchronousStageDriver extends AbstractStageDriver {
     private final Log log = LogFactory.getLog(SynchronousStageDriver.class);
-    
-    //flag describing whether or not the driver is fault tolerant
-    private boolean faultTolerant = false;
-    
-    //current state of thread processing
-    private State currentState = State.STOPPED;
     
     //queue of objects to be processed that are fed to the driver
     //when it is not in a running state
@@ -48,17 +43,18 @@ public class SynchronousStageDriver extends AbstractStageDriver {
     private final Feeder feeder = new Feeder() {
         public void feed(Object obj) {
             synchronized (SynchronousStageDriver.this) {
+                if (currentState == ERROR) throw new IllegalStateException("Unable to process data: driver in fatal error state.");
                 if (currentState != RUNNING) { //enqueue objects if stage has not been started
-                    if (currentState == ERROR) throw new IllegalStateException("Unable to process data: driver in fatal error state.");
                     queue.add(obj);
-                } else {
-                    try {
-                        stage.process(obj);
-                    } catch (StageException e) {
-                        recordProcessingException(obj, e);
-                        if (!faultTolerant) throw fatalError(e);
-                    }
+                    return;
                 }
+            }
+            
+            try {
+                stage.process(obj);
+            } catch (StageException e) {
+                recordProcessingException(obj, e);
+                if (faultTolerance == NONE) throw fatalError(e);
             }
         }
     };
@@ -68,8 +64,8 @@ public class SynchronousStageDriver extends AbstractStageDriver {
      * @param stage The stage to be run
      * @param context The context in which the stage will be run
      */
-    public SynchronousStageDriver(Stage stage, StageContext context) {
-        super(stage, context);
+    public SynchronousStageDriver(Stage stage, StageContext context, FaultTolerance faultTolerance) {
+        super(stage, context, faultTolerance);
     }
     
     /**
@@ -92,12 +88,10 @@ public class SynchronousStageDriver extends AbstractStageDriver {
         if (this.currentState == STOPPED) {
             try {
                 stage.preprocess();
+                setState(RUNNING);
             } catch (StageException e) {
                 throw fatalError(e);
             }
-            
-            this.currentState = RUNNING;
-            this.notifyAll();
             
             // feed any queued values before returning control
             while (!queue.isEmpty()) this.getFeeder().feed(queue.remove());
@@ -112,33 +106,29 @@ public class SynchronousStageDriver extends AbstractStageDriver {
      * @throws org.apache.commons.pipeline.StageException Thrown if an error occurs during postprocessing
      */
     public synchronized void finish() throws StageException {
-        if (this.currentState == RUNNING) {
+        if (this.currentState == RUNNING) {            
             try {
-                stage.postprocess();
+                testAndSetState(RUNNING, STOP_REQUESTED);
+                if (this.currentState == STOP_REQUESTED) stage.postprocess();
             } catch (StageException e) {
                 throw fatalError(e);
-            }
-            
-            stage.release();
-            
-            this.currentState = STOPPED;
-            this.notifyAll();
+            } finally {
+                stage.release();
+                testAndSetState(STOP_REQUESTED, STOPPED);
+            }            
         } else {
             throw new IllegalStateException("Driver is not running (current state: " + this.currentState + ")");
         }
     }
     
     /**
-     * Accessor for the current state of the stage driver
-     * @return the current driver state
+     * This method obtains a lock to set the current state of processing
+     * to error, records the error and returns a RuntimeException encapsulating
+     * the specified throwable.
      */
-    public synchronized State getState() {
-        return this.currentState;
-    }
-    
-    private synchronized RuntimeException fatalError(Throwable t) {
+    private RuntimeException fatalError(Throwable t) {
         try {
-            this.currentState = ERROR;
+            setState(ERROR);
             this.recordFatalError(t);
             stage.release();
             this.notifyAll();
