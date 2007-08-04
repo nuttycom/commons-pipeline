@@ -40,7 +40,7 @@ public class RaiseKeyAvailableEventStage extends BaseStage {
      * key, then emits the processed object unchanged.
      */
     public void process(Object obj) throws StageException {
-        this.context.raise(new KeyAvailableEvent(this, keyFactory.generateKey(obj)));
+        this.context.raise(new KeyAvailableEvent<Object>(this, keyFactory.generateKey(obj)));
         this.emit(obj);
     }    
     

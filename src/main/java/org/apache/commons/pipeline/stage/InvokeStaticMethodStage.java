@@ -19,7 +19,7 @@ package org.apache.commons.pipeline.stage;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import org.apache.commons.pipeline.Pipeline;
+
 import org.apache.commons.pipeline.StageException;
 
 /**
@@ -54,7 +54,7 @@ public class InvokeStaticMethodStage extends BaseStage {
      */
     public InvokeStaticMethodStage(String className, String methodName, String... argumentTypeNames) throws ClassNotFoundException, NoSuchMethodException {
         Class clazz = InvokeStaticMethodStage.class.getClassLoader().loadClass(className);
-        Class<?>[] argTypes = new Class[argumentTypeNames.length];
+        Class[] argTypes = new Class[argumentTypeNames.length];
         for (int i = 0; i < argumentTypeNames.length; i++) {
             argTypes[i] = Class.forName(argumentTypeNames[i]);
         }

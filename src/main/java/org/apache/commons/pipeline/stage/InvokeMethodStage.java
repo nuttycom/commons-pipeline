@@ -19,9 +19,7 @@ package org.apache.commons.pipeline.stage;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.List;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+
 import org.apache.commons.pipeline.StageException;
 
 /**
@@ -32,7 +30,7 @@ import org.apache.commons.pipeline.StageException;
  * @version $Id: InvokeMethodStage.java 3742 2006-08-28 16:50:23Z kjn $
  */
 public class InvokeMethodStage extends BaseStage {
-    private static final Log log = LogFactory.getLog(InvokeMethodStage.class);
+    //private static final Log log = LogFactory.getLog(InvokeMethodStage.class);
     
     private Method method;
     private Object[] arguments;
@@ -58,7 +56,7 @@ public class InvokeMethodStage extends BaseStage {
      */
     public InvokeMethodStage(String className, String methodName, Object... arguments) throws ClassNotFoundException, NoSuchMethodException{
         Class<?> clazz = InvokeMethodStage.class.getClassLoader().loadClass(className);
-        Class<?>[] argTypes = new Class[arguments.length];
+        Class[] argTypes = new Class[arguments.length];
         for (int i = 0; i < arguments.length; i++) argTypes[i] = arguments[i].getClass();
         
         this.method = clazz.getMethod(methodName, argTypes);

@@ -19,19 +19,24 @@ package org.apache.commons.pipeline.stage;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import org.apache.commons.pipeline.Pipeline;
+
 import org.apache.commons.pipeline.StageException;
 
 /**
- * <p>Provide this Stage with a class and a static method name and it will dynamically
- * look up the appropriate method to call based on the object type.  If the
- * object type is an array, it will assume that the method that needs to be called
- * contains the method signature as described by the objects in the array.
- * The object returned from the method call will be exqueued.</p>
+ * <p>
+ * Provide this Stage with a class and a static method name and it will
+ * dynamically look up the appropriate method to call based on the object type.
+ * If the object type is an array, it will assume that the method that needs to
+ * be called contains the method signature as described by the objects in the
+ * array. The object returned from the method call will be exqueued.
+ * </p>
  *
- * <p>The resulting object will be exqueued on the main pipeline if it is not null.  If
- * it is null, we will try to place the original object on the branch specified
- * by the nullResultBranchKey property. The default for this value is "nullResult".</p>
+ * <p>
+ * The resulting object will be exqueued on the main pipeline if it is not null.
+ * If it is null, we will try to place the original object on the branch
+ * specified by the nullResultBranchKey property. The default for this value is
+ * "nullResult".
+ * </p>
  */
 public class DynamicLookupStaticMethodStage extends BaseStage {
     
@@ -48,9 +53,11 @@ public class DynamicLookupStaticMethodStage extends BaseStage {
     /**
      * Creates a new instance of DynamicLookupStaticMethodStage
      *
-     * @param clazz The class that defines the static method that will be used to
-     * process objects.
-     * @param methodName The name of the method. This method may be overloaded.
+     * @param clazz
+     *            The class that defines the static method that will be used to
+     *            process objects.
+     * @param methodName
+     *            The name of the method. This method may be overloaded.
      */
     public DynamicLookupStaticMethodStage(Class clazz, String methodName) {
         if (clazz == null) throw new IllegalArgumentException("Argument 'clazz' can not be null.");
@@ -61,42 +68,50 @@ public class DynamicLookupStaticMethodStage extends BaseStage {
     }
     
     /**
-     * Creates a new DynamicLookupStaticMethodStage for the specified class
-     * and static method.
+     * Creates a new DynamicLookupStaticMethodStage for the specified class and
+     * static method.
      *
-     * @param className The fully qualified class name of the class in which the
-     * static method that will be used to process objects is defined.
-     * @param methodName The name of the method. This method may be overloaded.
-     * @throws ClassNotFoundException if the specified class cannot be loaded.
+     * @param className
+     *            The fully qualified class name of the class in which the
+     *            static method that will be used to process objects is defined.
+     * @param methodName
+     *            The name of the method. This method may be overloaded.
+     * @throws ClassNotFoundException
+     *             if the specified class cannot be loaded.
      */
     public DynamicLookupStaticMethodStage(String className, String methodName) throws ClassNotFoundException {
         this(Thread.currentThread().getContextClassLoader().loadClass(className), methodName);
     }
     
     /**
-     * <p>Finds the appropriate method overloading for the method specified
-     * by {@link #getMethodName() methodName}, calls it to process the object, and exqueues
-     * any returned object. If the returned object is null, the original object
-     * is enqueued on the branch specified by the nullResultBranchKey property.</p>
+     * <p>
+     * Finds the appropriate method overloading for the method specified by
+     * {@link #getMethodName() methodName}, calls it to process the object, and
+     * exqueues any returned object. If the returned object is null, the
+     * original object is enqueued on the branch specified by the
+     * nullResultBranchKey property.
+     * </p>
      *
-     * @param obj The object to process.
+     * @param obj
+     *            The object to process.
      */
     public void process(Object obj) throws StageException {
-        Class<?>[] argTypes;
-            if (obj.getClass().isArray()){
-                Object[] objs = (Object[]) obj;
-            argTypes = new Class<?>[objs.length];
-                for (int i = 0; i < objs.length; i++){
+        Class[] argTypes;
+        if (obj.getClass().isArray()) {
+            Object[] objs = (Object[]) obj;
+            argTypes = new Class[objs.length];
+            for (int i = 0; i < objs.length; i++) {
                 argTypes[i] = objs[i].getClass();
-                }
-            } else {
-            argTypes = new Class<?>[] {obj.getClass()};
             }
-            
+        } else {
+            argTypes = new Class[] {obj.getClass()};
+        }
+        
         try {
             Method method = this.clazz.getMethod(methodName, argTypes);
             
-            //due to the way that varargs work, we need to ensure that we get the correct compile-time overloading of method.invoke()
+            // due to the way that varargs work, we need to ensure that we get
+            // the correct compile-time overloading of method.invoke()
             Object result = obj.getClass().isArray() ? method.invoke(null, (Object[]) obj) : method.invoke(null, obj);
             if (result != null){
                 this.emit(result);
@@ -116,18 +131,19 @@ public class DynamicLookupStaticMethodStage extends BaseStage {
         }
     }
     
-    /** Returns the name of the method we are using */
+    /** Returns the name of the method to be executed. */
     public String getMethodName(){
         return this.methodName;
-        }
+    }
     
-    /** Returns the class we are using */
+    /** Returns the class containing the method to be executed */
     public Class getMethodClass(){
         return this.clazz;
     }
     
     /**
-     * Getter for property nullResultBranchKey. 
+     * Getter for property nullResultBranchKey.
+     *
      * @return Value of property nullResultBranchKey.
      */
     public String getNullResultBranchKey() {
@@ -136,10 +152,12 @@ public class DynamicLookupStaticMethodStage extends BaseStage {
     
     /**
      * Setter for property nullResultBranchKey.
-     * @param nullResultBranchKey New value of property nullResultBranchKey.
+     *
+     * @param nullResultBranchKey
+     *            New value of property nullResultBranchKey.
      */
     public void setNullResultBranchKey(String nullResultBranchKey) {
         this.nullResultBranchKey = nullResultBranchKey;
     }
-
+    
 }
