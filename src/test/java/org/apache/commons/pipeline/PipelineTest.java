@@ -17,10 +17,14 @@
 
 package org.apache.commons.pipeline;
 
-import junit.framework.*;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EventObject;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
 import org.apache.commons.pipeline.driver.SynchronousStageDriverFactory;
 import org.apache.commons.pipeline.event.ObjectProcessedEvent;
 import org.apache.commons.pipeline.listener.ObjectProcessedEventCounter;
@@ -76,7 +80,7 @@ public class PipelineTest extends TestCase {
         
         instance.raise(ev);
         
-        Thread.currentThread().yield(); //give the notifier thread created by raise priority
+        Thread.yield(); //give the notifier thread created by raise priority
         
         assertNotNull(counter.getCounts().get(testStage));
         assertEquals(1, counter.getCounts().get(testStage).intValue());
@@ -98,7 +102,7 @@ public class PipelineTest extends TestCase {
         EventObject ev = new ObjectProcessedEvent(testStage, "Hello, World!");
         branch1.raise(ev);
         
-        Thread.currentThread().yield(); //give the notifier thread created by raise priority
+        Thread.yield(); //give the notifier thread created by raise priority
         
         assertNotNull(counter.getCounts().get(testStage));
         assertEquals(1, counter.getCounts().get(testStage).intValue());

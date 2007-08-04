@@ -19,12 +19,10 @@ package org.apache.commons.pipeline.stage;
 
 import java.io.IOException;
 import java.io.InputStream;
-import junit.framework.*;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import org.apache.commons.pipeline.Pipeline;
-import org.apache.commons.pipeline.Stage;
+
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
 
 /**
@@ -64,8 +62,8 @@ public class URLToInputStreamStageTest extends AbstractStageTest {
         InputStream in = (InputStream) testFeeder.receivedValues.get(0);
         try {
             assertNotNull(in);
-        byte[] buffer = new byte[128];
-            int bytes = in.read(buffer);
+            byte[] buffer = new byte[128];
+            @SuppressWarnings("unused") int bytes = in.read(buffer);
         } finally {
             in.close();
         }
@@ -86,7 +84,7 @@ public class URLToInputStreamStageTest extends AbstractStageTest {
         InputStream in = (InputStream) testFeeder.receivedValues.get(0);
         try {
             byte[] buffer = new byte[128];
-            int bytes = in.read(buffer);
+            @SuppressWarnings("unused") int bytes = in.read(buffer);
             fail("input stream should have been closed, so reading should throw an exception.");
         } catch (IOException expected){
             // do nothing

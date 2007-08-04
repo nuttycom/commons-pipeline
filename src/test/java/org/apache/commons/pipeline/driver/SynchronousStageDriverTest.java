@@ -19,6 +19,7 @@ package org.apache.commons.pipeline.driver;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
+
 import org.apache.commons.pipeline.Feeder;
 import org.apache.commons.pipeline.StageDriver.State;
 
@@ -43,7 +44,7 @@ public class SynchronousStageDriverTest extends AbstractStageDriverTest {
      * Test of getFeeder method, of class org.apache.commons.pipeline.driver.SynchronousStageDriver.
      */
     public void testGetFeeder() {
-        SynchronousStageDriver instance = new SynchronousStageDriver(stage, context);
+        SynchronousStageDriver instance = new SynchronousStageDriver(stage, context, FaultTolerance.NONE);
         
         Feeder feeder = instance.getFeeder();
         assertNotNull(feeder);
@@ -56,7 +57,7 @@ public class SynchronousStageDriverTest extends AbstractStageDriverTest {
      * proper behavior of the getState() method.
      */
     public void testStartFinish() throws Exception {
-        SynchronousStageDriver instance = new SynchronousStageDriver(stage, context);
+        SynchronousStageDriver instance = new SynchronousStageDriver(stage, context, FaultTolerance.NONE);
         
         assertEquals(instance.getState(), State.STOPPED);
         

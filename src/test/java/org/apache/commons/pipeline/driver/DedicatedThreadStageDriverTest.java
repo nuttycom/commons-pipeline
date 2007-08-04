@@ -17,13 +17,15 @@
 
 package org.apache.commons.pipeline.driver;
 
-import junit.framework.*;
 import java.util.concurrent.LinkedBlockingQueue;
+
+import junit.framework.Test;
+import junit.framework.TestSuite;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.pipeline.Feeder;
 import org.apache.commons.pipeline.StageDriver.State;
-import static org.apache.commons.pipeline.StageDriver.State.*;
 
 /**
  *
@@ -47,7 +49,7 @@ public class DedicatedThreadStageDriverTest extends AbstractStageDriverTest {
      */
     public void testGetFeeder() {
         log.debug("testGetFeeder ---------------------------------------------");
-        DedicatedThreadStageDriver instance = new DedicatedThreadStageDriver(stage, context, new LinkedBlockingQueue(), 500, FaultTolerance.NONE);
+        DedicatedThreadStageDriver instance = new DedicatedThreadStageDriver(stage, context, new LinkedBlockingQueue<Object>(), 500, FaultTolerance.NONE);
         
         Feeder feeder = instance.getFeeder();
         assertNotNull(feeder);        
@@ -61,7 +63,7 @@ public class DedicatedThreadStageDriverTest extends AbstractStageDriverTest {
      */
     public void testStartFinish() throws Exception {
         log.debug("testStartFinish -------------------------------------------");
-        DedicatedThreadStageDriver instance = new DedicatedThreadStageDriver(stage, context, new LinkedBlockingQueue(), 500, FaultTolerance.NONE);
+        DedicatedThreadStageDriver instance = new DedicatedThreadStageDriver(stage, context, new LinkedBlockingQueue<Object>(), 500, FaultTolerance.NONE);
         
         assertEquals(State.STOPPED, instance.getState());
         

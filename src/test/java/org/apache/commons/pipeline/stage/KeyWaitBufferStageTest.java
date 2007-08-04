@@ -19,16 +19,11 @@
 
 package org.apache.commons.pipeline.stage;
 
-import junit.framework.*;
 import java.util.EventObject;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.TreeSet;
-import org.apache.commons.pipeline.StageContext;
-import org.apache.commons.pipeline.StageEventListener;
-import org.apache.commons.pipeline.StageException;
+
+import junit.framework.Test;
+import junit.framework.TestSuite;
+
 import org.apache.commons.pipeline.event.KeyAvailableEvent;
 import org.apache.commons.pipeline.util.KeyFactory;
 import org.apache.commons.pipeline.util.QueueFactory;
@@ -54,15 +49,13 @@ public class KeyWaitBufferStageTest extends AbstractStageTest {
      * data waiting for notify() to be called with an appropriate event.
      */
     public void testProcessAndNotify() throws Exception {
-        System.out.println("notify");
-        
         String obj = "Hello, World!";
         KeyFactory<Object,Integer> keyFactory = new KeyFactory.HashKeyFactory();
-        EventObject ev = new KeyAvailableEvent(this, keyFactory.generateKey(obj));
+        EventObject ev = new KeyAvailableEvent<Integer>(this, keyFactory.generateKey(obj));
 
         KeyWaitBufferStage instance = new KeyWaitBufferStage();
         instance.setKeyFactory(keyFactory);
-        instance.setQueueFactory(new QueueFactory.LinkedListFactory());
+        instance.setQueueFactory(new QueueFactory.LinkedListFactory<Object>());
         
         this.init(instance);
                 
