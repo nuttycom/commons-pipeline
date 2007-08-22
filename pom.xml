@@ -9,7 +9,7 @@
   </parent>
   <artifactId>commons-pipeline</artifactId>
   <version>1.0-SNAPSHOT</version>
-  <name>Pipeline</name>
+  <name>Pipeline (Sandbox)</name>
   <description>
     A framework for constructing pipelined processing systems that support
     concurrent processing of objects in multiple processing stages.
