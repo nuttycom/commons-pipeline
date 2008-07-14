@@ -27,7 +27,7 @@ import org.apache.commons.pipeline.testFramework.TestStageContext;
  *
  *
  */
-public class AbstractStageTest extends AbstractLoggingTestCase {
+public abstract class AbstractStageTest extends AbstractLoggingTestCase {
     
     //initialize the testing context
     protected TestStageContext testContext;
