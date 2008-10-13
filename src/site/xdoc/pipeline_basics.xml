@@ -1,0 +1,712 @@
+<?xml version="1.0"?>
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<!--
+    FILE: pipeline_basics.xml
+    SubVersion $Id$
+-->
+<document>
+    <properties>
+        <title>Pipeline Basics</title>
+        <author email="Ken.Tanaka@noaa.gov">Ken Tanaka</author>
+    </properties>
+    <body>
+        <p>
+            A tutorial on some of the Basics needed to use the Apache Commons Pipeline 
+            workflow framework. The target audience for this document consists of developers
+            who will need to assemble existing stages or write their own stages. The
+            pipeline provides a Java class library intended to make it easy to use and reuse
+            stages as modular processing blocks.
+        </p>
+        <section name="Pipeline Structure">
+            <p>
+            <b>Stages</b> in a pipeline represent the logical the steps needed
+            to process data. Each represents a single high level processing
+            concept such as finding files, reading a file format, computing a
+            product from the data, or writing data to a database. The primary
+            advantage of using the Pipeline framework and building the
+            processing steps into stages is the reusablility of the stages in 
+            other pipelines.
+            </p>
+            <p>
+                <img src="images/BasicPipeline.png" alt="A basic pipeline"/>
+            </p>
+            <p>
+                A <b>Pipeline</b> is built up from stages which can pass data on
+                to subsequent stages. The arrows above that are labelled
+                <b>&quot;EMIT&quot;</b> show the data output of one stage being
+                passed to the next stage. At the code level, there is an
+                <code>emit()</code> method that sends data to the next stage.
+                The data flow starts at the left, where there is an arrow
+                labelled <b>&quot;FEED&quot;</b>. The FEED starts off the
+                pipeline and is usually set up by a configuration file,
+                discussed below. The stages themselves do not care if the
+                incoming data are from a feed or the <code>emit()</code> of a
+                previous stage.
+            </p>
+            <p>
+                Pipelines may also branch to send the same or different data along
+                different processing routes.<br/>
+                <img src="images/BranchingPipeline.png" alt="A branching pipeline"/>
+            </p>
+            <subsection name="Configuration by Digester or Spring">
+                <p>
+                There are two methods for configuring the Pipeline, both based
+                on XML control files. The simpler method uses <a 
+                href="http://commons.apache.org/digester/">Digester</a>,
+                end users of a pipeline may be able to modify this for
+                themselves. The Spring framework has also been used to configure
+                the Pipeline, but it is both more complex and more powerful, as
+                it's structure more closely models Java programming objects. The
+                stages are ordered by these XML configuration files, and stage
+                specific parameters are set up by these files. These control
+                files also allow global parameters visible to all stages in the
+                form of Environment parameters. This configuration approach
+                allows alot of control over the pipeline layout and behavior,
+                all without recompiling the Java code.
+                </p>
+                <p>
+                <b>This tutorial will introduce the Digester route to
+                configuring pipelines since that is the simpler method.</b>
+                </p>
+            </subsection>
+        </section>
+        <section name="Notes on Stages">
+            <p>
+            A standard stage has a queue to buffer the incoming data objects.
+            The queueing is an aid to efficiency when some stages have different
+            rates of throughput than other stages or irregular processing rates,
+            especially those relying on network connections or near-line media
+            for their data. This queue is not an actual part of the stage itself
+            but is managed by a <b>stage driver</b>, which feeds the objects to
+            the stage as it is ready for them. The stage passes a data object on
+            to the next stage, where it may wait in a queue (in the order
+            received) until the next stage is ready to process it. Typically
+            each stage runs in its own processing thread, however, for some
+            applications you can configure the pipeline to run objects one at a
+            time through all the stages in a single thread, that is, the next
+            object is not started until the previous has finished all the
+            stages.
+            </p>
+            <p>
+            Stages are derived from the abstract  class
+            <code>org.apache.commons.pipeline.stage.<b>BaseStage</b></code>.
+            There are  a number of ready to use existing stages to meet various
+            processing needs. You may also create custom stages by extending the
+            <code>BaseStage</code> or one of the other existing stages.
+            </p>
+            <p>
+            An example showing mixed types and quantities, see notes below
+            figure.<br /> 
+            <img src="images/ExamplePipeline1.png" alt="An example pipeline"/>
+            <p>
+            </p>
+            <b>Stages in the above diagram illustrate:</b><br />
+            <ul>
+                <li> Normally  all the objects going into a stage are of the
+                same type. Avoid the repeated writing of switch statements in
+                stage code to sort objects, instead use branches to segregate
+                different object types. 
+                </li>
+                <li> One object fed into a stage does not always 
+                produce one object out.
+                <ul>
+                    <li> Stages that do not pass on (emit)  any objecs are referred to as
+                    <b>terminal stages</b>. Avoid creating this type of stage, since they limit your
+                    possibilities when building pipelines. (This is easy to do, one line of code
+                    passes data to the next stage.) 
+                    </li>
+                    <li> Stages that send objects on to more than one subsequent
+                    stage are called <b>branching stages</b>. 
+                    </li>
+                    <li> Stages that pass on the same type of object that they
+                    receive, but only if meeting some chosen criteria, are
+                    called <b>filtering stages</b>. 
+                    </li>
+                    <li> It is common to have <b>reader stages</b> and <b>writer
+                    stages</b> to bring information into and out of a pipeline.
+                    </li>
+                    <li> Stages that create different objects from those passed
+                    into them are called <b>converter stages</b>. 
+                    </li>
+                </ul>
+                </li>
+                <li> The type of object emitted  does not have to be of the same
+                type going in.
+                </li>
+                <li> When branching, the objects going to different following
+                stages do not have to be of the same type, or of the same
+                quantity. Note that the &quot;FileReader&quot; stage above
+                produces 100 cell objects for each incoming file while just one
+                boundary shape is passed to the branch.
+                </li>
+            </ul>
+            <b>Other notes (not necessarily obvious from the diagram above):</b><br />
+            <ul>
+                <li> Although the data being fed to a stage are passed as Java
+                Objects, the stage receiving them is expecting a more specific
+                data type such as files or data records. Usually incoming
+                objects are checked to see if they are an instance of the
+                desired data class and then casted to that class before the rest
+                of the work is done.
+                </li>
+                <li> You can set the  type of stage driver used for each stage
+                in your pipeline. There are options for limiting queue sizes to
+                control memory and resource usage. For these bounded queues, the
+                upstream stages will block and wait until there is adequate room
+                in the downstream stage's queue.
+                </li>
+            </ul>
+            </p>
+            <subsection name="Role of the StageDriver">
+                <p>
+                There is a Java interface called the <b>StageDriver</b> which 
+                controls the feeding of data into Stages, and communication
+                between stages and the pipeline containing them. The stage
+                lifecycle and interactions between stages are therefore very
+                dependent on the direction provided by these stage drivers.
+                These StageDriver factories implement the
+                <b>StageDriverFactory</b> interface. During pipeline setup, the
+                StageDrivers are provided by factory classes that produce a
+                specific type of StageDriver. Each stage will have its own
+                instance of a StageDriver, and different stages within a
+                pipeline may use different types of StageDrivers, although it is
+                common for all stages in a pipeline to use the same type of
+                StageDriver (all sharing the same StageDriverFactory
+                implementation).
+                </p>
+                <p><br />
+                Some common stage drivers are:
+                <table>
+                <tr>
+                    <td><code><b>DedicatedThreadStageDriver</b></code></td>
+                    <td>Spawns a single  thread to process a stage. Provided by
+                    <code>DedicatedThreadStageDriverFactory()</code></td>
+                </tr>
+                <tr>
+                    <td><code><b>SynchronousStageDriver</b></code></td>
+                    <td>This is a non-threaded  StageDriver. Provided by
+                    <code>SynchronousStageDriverFactory()</code></td>
+                </tr>
+                <tr>
+                    <td><code><b>ThreadPoolStageDriver</b></code></td>
+                    <td>Uses a pool of threads  to process objects from an input
+                    queue. Provided by
+                    <code>ThreadPoolStageDriverFactory()</code></td>
+                </tr>
+                </table>
+                </p>
+                <p>
+                This tutorial  will cover the
+                <code>DedicatedThreadStageDriver</code> since that is a good
+                general purpose driver. You may at some point wish to write your
+                own StageDriver implementation, but that is an advanced topic
+                not covered here.
+                </p>
+            </subsection>
+            <subsection name="Internal Stage Anatomy">
+                <p>
+                If you need to write your own stage, this section gives an overview on some methods you will need to know about in order to meet the Stage Interface.
+                <br />
+                </p>
+                <p><br />
+                <b>Stage</b> itself is an interface defined in <code>org.apache.commons.pipeline.Stage</code> and it must have the following methods:
+                </p>
+                <p>
+                <table>
+                <tr>
+                    <td colspan="2"><b><div align="center">Stage 
+                    Interface Methods</div></b></td>
+                </tr>
+                <tr>
+                    <td><code><b>init(StageContext)</b></code></td>
+                    <td>Associate the stage with the environment. Run once in lifecycle.</td>
+
+                </tr>
+                <tr>
+                    <td><code><b>preprocess()</b></code></td>
+                    <td>Do any necessary setup. Run once in lifecycle.</td>
+                </tr>
+                <tr>
+                    <td><code><b>process(Object)</b></code></td>
+                    <td>Process an object &amp; emit  results to next stage. Run <b>N</b> times,
+                    once for each object fed in.</td>
+                </tr>
+                <tr>
+                    <td><code><b>postprocess()</b></code></td>
+                    <td>Handle aggregated data, etc. Run once in lifecycle.</td>
+                </tr>
+                <tr>
+                    <td><code><b>release()</b></code></td>
+                    <td>Clean up any  resources being held by stage. Run once in lifecycle.</td>
+                </tr>
+                </table>
+                </p>
+                <p><br />
+                An abstract class is  available called
+                <code>org.apache.commons.pipeline.<b>BaseStage</b></code> from which many other
+                stages are derived. You can extend this class or one of the other stages built
+                upon BaseStage.  This provides no-op implementations of the Stage interface
+                methods. You can then override these methods as needed when you extend one of
+                these classes. For simple processing you may not need to override
+                <code>init(StageContext)</code>, <code>postprocess()</code>, nor
+                <code>release()</code>. You will almost always be providing your own
+                <code>process(Object)</code> method however. From a software design perspective,
+                think of <b>Inversion of Control</b>, since instead of writing a custom main
+                program to call standard subroutines, you are writing custom subroutines to be
+                called by a standard main program.
+                </p>
+                <p><br /><br />
+                <b>BaseStage</b>  provides a method called <code>emit(Object obj)</code>, and
+                <code>emit(String branch, Object obj)</code> for branching, which sends objects
+                on to the next Stage. Thus it is normal for <code>emit()</code> to be called
+                near the end of <code>process()</code>. A <i>terminal stage</i> simply doesn't
+                call <code>emit()</code>, so no objects are passed on. It is also very easy to
+                change a stage so it is not a terminal stage by adding an <code>emit()</code> to
+                the code. Note that it is harmless for a stage to emit an object when there is
+                no subsequent stage to use it; the emitted object just goes unused. Sometimes
+                the <code>emit()</code> method is called by <code>postprocess()</code> in
+                addition to or instead of by <code>process()</code>. When processing involves
+                buffering, or summarizing of incoming and outgoing objects, then the
+                <code>process()</code> method normally stores information from incoming objects,
+                and <code>postprocess()</code> finishes up the work and emits a new object.
+                </p>
+                <subsection name="Stage Lifecycle">
+                    <p>
+                    When a pipeline is  assembled and run, each stage is normally run in its own
+                    thread (with all threads of a pipeline being owned by the same JVM instance).
+                    This multithreaded approach should give a processing advantage on a
+                    multiprocessor system. For a given stage, the various Stage methods are run in
+                    order: <code>init()</code>, <code>preprocess()</code>, <code>process()</code>,
+                    <code>postprocess()</code> and <code>release()</code>. However, between stages,
+                    the order that the various methods begin and complete is not deterministic. In
+                    other words, in a pipeline with multiple stages, you can't count on any
+                    particular stage's <code>preprocess()</code> methods beginning or completing
+                    before or after that method in another stage. If you have dependencies between
+                    stages, see the discussion on Events and Listeners in the <b>Communication
+                    between Stages</b> section below.
+                    </p>
+                    <p><br /><br />
+                    The order of  stages in a pipeline is determined by the pipeline configuration
+                    file. With Digester, this is an XML file which lists the stages to be used, plus
+                    initialization parameters. As each stage is added to the pipeline, its
+                    <code>init()</code> method is executed. After all the stages of the pipeline
+                    have been loaded into place the pipeline is set to begin running. The
+                    <code>preprocess()</code> method is called for the various stages. When using
+                    the <code>DedicatedThreadStageDriver</code> each stage begins running in its own
+                    thread, and the <code>preprocess()</code> methods are run asynchronously.
+                    </p>
+                    <p><br />
+                    When the first  stage of a pipeline is done with its <code>preprocess()</code>
+                    method, it will begin running <code>process()</code> on objects being fed in by
+                    its associated stage driver. As the first stage is done processesing data
+                    objects, they will be emitted to the next stage. If the next stage is not
+                    finished with its own <code>preprocess()</code> method, the passed data objects
+                    will be queued by the second stage's stage driver. When all the initial objects
+                    have been processed by the first stage's <code>process()</code> method, then it
+                    will then call the <code>postprocess()</code> method. When the
+                    <code>postprocess()</code> method is complete, a STOP_REQUESTED signal is sent
+                    to the next stage to indicate that no more objects will be coming down the
+                    pipeline. The next stage will then finish processing the objects in its queue
+                    and then call its own <code>postprocess()</code> method. This sequence of
+                    finishing out the queue and postprocessing will propagate down the pipeline.
+                    Each stage may begin running its <code>release()</code> method after finishing
+                    the <code>postprocess()</code>. <code>init()</code> and <code>release()</code>
+                    should not have any dependencies outside their stage.
+                    </p>
+                    <p><br />
+                    Each stage  can be configured to stop or continue should a fault occur during
+                    processing. Stages can throw a <code>StageException</code> during
+                    <code>preprocess()</code>, <code>process()</code>, or
+                    <code>postprocess()</code>. If configured to continue, the stage will begin
+                    processing the next object. If configured to stop on faults, the stage will end
+                    processing, and any subsequent <code>process()</code> or
+                    <code>postprocess()</code> methods will <b>not</b> be called. The
+                    <code>release()</code> method will always be called, as it resides in the
+                    <code>finally</code> block of a <code>try-catch</code> construct around the
+                    stage processing.
+                    </p>
+                </subsection>
+            </subsection>
+            <subsection name="Communication between Stages">
+                <p>
+                There are two primary mechanisms for Stages to communicate with each other. In
+                keeping with the dataflow and &quot;Pipeline&quot; analogy, these both send
+                information &quot;downstream&quot; to subsequent stages.<br /> 
+                <ul>
+                    <li><b>Normal <code>emit()</code> to</b> (queue of) <b>next Stage</b> -
+                    sequential passage of data objects. These objects are often implemented as Java
+                    Beans, and are sometimes referred to as &quot;data beans&quot;.
+                    </li>
+                    <li><b>Events and Listeners</b> - often to pass control or synchronizing
+                    metadata between stages. Use this mechanism when a stage later in the pipeline
+                    needs additional information that can only be provided by an earlier stage,
+                    especially information that doesn't belong in the data bean.
+                    </li>
+                </ul>
+                </p>
+                <p>
+                As an example of the Event and Listener, suppose you have one stage reading from
+                a database table, and a later stage will be writing data to another database.
+                The table reader stage should pass table layout information to the table writer
+                stage so that the writer can create a table with the proper fields in the event
+                the destination table does not already exist. The
+                <code>TableReader.preprocess()</code> method will raise an event that carries
+                with it the table layout data. The <code>preprocess()</code> method of the
+                following TableWriter stage is set up to listen for the table event, and will
+                wait until that event happens before proceeding. In this way the TableWriter
+                will not process objects until the destination table is ready.
+                </p>
+            </subsection>
+        </section>
+        <section name="Pipeline Configuration using Digester">
+            <p>
+            Now it's time to present the <b>Pipeline configuration file</b>, which is
+            writtten in XML when using Digester.
+            </p>
+            <subsection name="First Pipeline Configuration Example">
+                <p>
+                Here is an example showing the basic structure. This pipeline has three stages
+                and an environment constant defined. A summary of the elements shown follows the
+                sample code.
+                <table><tr><td>
+                <pre>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+
+&lt;!--
+    Document   : configMyPipeline.xml
+    Description: An example Pipeline configuration file
+--&gt;
+
+&lt;pipeline&gt;
+    
+    &lt;driverFactory className=&quot;org.apache.commons.pipeline.driver.DedicatedThreadStageDriverFactory&quot;
+                   id=&quot;df0&quot;/&gt;
+
+    &lt;!-- The &lt;env&gt; element can be used to add global environment variable values to the pipeline.
+         In this instance almost all of the stages need a key to tell them what type of data
+         to process.
+    --&gt;
+    &lt;env&gt;
+        &lt;value key=&quot;dataType&quot;&gt;STLD&lt;/value&gt;
+    &lt;/env&gt;               
+        
+    &lt;!-- The initial stage traverses a directory so that it can feed the filenames of
+         the files to be processed to the subsequent stages.
+         
+         The directory path to be traversed is in the feed block following this stage.
+  
+         The filePattern in the stage block is the pattern to look for within that directory.
+    --&gt;
+    
+    &lt;stage className=&quot;org.apache.commons.pipeline.stage.FileFinderStage&quot;
+           driverFactoryId=&quot;df0&quot;
+           filePattern=&quot;SALES\.(ASWK|ST(GD|GL|LD))\.N.?\.D\d{5}&quot;/&gt;
+      
+    &lt;feed&gt;
+        &lt;value&gt;/mnt/data2/gdsg/sst/npr&lt;/value&gt;
+    &lt;/feed&gt;
+
+    &lt;stage className=&quot;gov.noaa.eds.example.Stage2&quot;
+           driverFactoryId=&quot;df0&quot; /&gt;
+
+    &lt;!-- Write the data from the SstFileReader stage into the Rich Inventory database.  --&gt;
+    &lt;stage className=&quot;gov.noaa.eds.sst2ri.SstWriterRI&quot;
+           driverFactoryId=&quot;df0&quot;/&gt;
+
+&lt;/pipeline&gt;</pre>
+                </td></tr></table>
+                </p>
+                <p>
+                Here is a summary explanation of items in the above example<br />
+                <ul>
+                    <li> <br /><table><tr><td><code>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;</code></td></tr></table> These pipeline configuration files always start with this XML declaration.
+                    </li>
+                    <li> <br /><table><tr><td><code>&lt;!-- Standard XML comment --&gt;</code></td></tr></table>
+                    </li>
+                    <li> <br /><table><tr><td><code>&lt;pipeline&gt;...&lt;/pipeline&gt;</code></td></tr></table> The top level element is <b><code>&lt;pipeline&gt;</code></b> and surrounds the rest of the configuration.
+                    </li>
+                    <li> <br /><table><tr><td><code>&lt;driverFactory className=&quot;org.apache.commons.pipeline.driver.DedicatedThreadStageDriverFactory&quot; id=&quot;df0&quot;/&gt;</code></td></tr></table> Sets up a StageDriverFactory to feed and control the stages. Stages that should be controlled by a DedicatedThreadStageDriver will get one from the factory named &quot;df0&quot;.
+                    </li>
+                    <li> <br /><table><tr><td><code>&lt;env&gt;  &lt;value key=&quot;dataType&quot;&gt;STLD&lt;/value&gt;  &lt;/env&gt;</code></td></tr></table> Set up a constant with the name &quot;dataType&quot; that all stages can access to find that &quot;STLD&quot; data are being processed in this run. If there are branches, then the environment constants are local to just the branch they are defined in--they are <b>NOT</b> shared between branches. You <b>can</b>, however,  define the same environment constant in as many branches as you need to.
+                    </li>
+                    <li> <br /><table><tr><td><code>&lt;stage className=&quot;org.apache.commons.pipeline.stage.FileFinderStage&quot; driverFactoryId=&quot;df0&quot; filePattern=&quot;SALES\.(ASWK|ST(GD|GL|LD))\.N.?\.D\d{5}&quot;/&gt;</code></td></tr></table> Defines a stage, FileFinderStage, that will choose files for the next stage to process. This example has a parameter called &quot;filePattern&quot; which limits the files passed on to the next stage. Only files that match the regular expression given will be used. Notice that the &quot;driverFactoryId&quot; is &quot;df0&quot;, which matches the name given to the driverFactory element earlier in this file.
+                    </li>
+                    <li> <br /><table><tr><td><code>&lt;feed&gt;  &lt;value&gt;/mnt/data2/gdsg/sst/npr&lt;/value&gt;  &lt;/feed&gt;</code></td></tr></table> Initial data for the first stage are passed in by the <b><code>&lt;feed&gt;</code></b> values. In this example, the FileFinderStage expects at least one starting directory from which to get files. <b>Note that the <code>&lt;feed&gt;</code> must come after the first stage in the pipeline in the configuration file. Stages are created as they are encountered in the configuration file, and without any stage defined first, feed values will be discarded.</b>
+                    </li>
+                </ul>
+                </p>
+            </subsection>
+            <subsection name="Second Pipeline Configuration Example: Very Simple">
+                <p>
+                The second example shows a minimal pipeline with two stages. The first stage is
+                a FileFinderStage, which reads in file names from the starting directory
+                &quot;/data/sample&quot; and passes on any starting with
+                &quot;HelloWorld&quot;.  The second stage is a LogStage, which is commonly used
+                during debugging. LogStage writes it's input to a log file using the passed in
+                object's <code>toString</code> method and then passes on what it receives to the
+                next stage, making it easy to drop between any two stages for debugging purposes
+                without changing the objects passed between them.
+                </p>
+                <p><br /><br />
+                <img src="images/ExamplePipelineSimple.png" alt="Simple Pipeline Configuration Example"/>
+                </p>
+                <p><br /><br />
+                The configuration file corresponding the the image above has some colored text
+                to make it easier to match the elements to the objects in the image.
+                </p>
+                <p><br /><br />
+                <table><tr><td>
+<pre><span style="color:#666666;">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+
+&lt;!--
+    Document   : configSimplePipeline.xml
+    Description: A sample configuration file for a very simple pipeline
+--&gt;</span>
+
+&lt;<b>pipeline</b>&gt;
+
+    &lt;<b>driverFactory</b> className=&quot;org.apache.commons.pipeline.driver.<b>DedicatedThreadStageDriverFactory</b>&quot;
+                   id=&quot;<span style="color:#008080;"><b>driverFactory</b></span>&quot;/&gt;
+
+    &lt;!--
+        ((1)) The first stage recursively searches the directory given in the feed statement.
+        The filePattern given will match any files beginning with &quot;HelloWorld&quot;.
+    --&gt;
+    <span style="color:#990000;">&lt;<b>stage</b> className=&quot;org.apache.commons.pipeline.stage.<b>FileFinderStage</b>&quot;
+           driverFactoryId=&quot;<span style="color:#008080;"><b>driverFactory</b></span>&quot;
+           <span style="color:#FF6600;">filePattern=&quot;<b>HelloWorld.*</b>&quot;</span>/&gt;</span> <span style="color:#FF6600;">&lt;!-- ((3)) --&gt;</span>
+
+    &lt;!-- Starting directory for the first stage. --&gt;
+    <span style="color:#00CC00;">&lt;<b>feed</b>&gt;
+        &lt;value&gt;<b>/data/sample</b>&lt;/value&gt; &lt;!-- ((4)) --&gt;
+    &lt;/feed&gt;</span>
+
+    &lt;!-- ((2)) Report the files found. --&gt;
+    <span style="color:#0000FF;">&lt;<b>stage</b> className=&quot;org.apache.commons.pipeline.stage.<b>LogStage</b>&quot;
+           driverFactoryId=&quot;<span style="color:#008080;"><b>driverFactory</b></span>&quot; /&gt;</span>
+
+&lt;/pipeline&gt;</pre>
+                </td></tr></table>
+                </p>
+                <p><br />
+                One driver factory serves both stages. The driver factory ID is
+                &quot;driverFactory&quot;, and this value is used by the driverFactoryId in both
+                stages.
+                </p>
+                <p><br /><br />
+                In theory a pipeline could consist of just one stage, but this degenerate case
+                is not much different from a plain program except that it can be easily expanded
+                with additional stages.
+                </p>
+            </subsection>
+            <subsection name="Third Pipeline Configuration Example: A More Complex, Branching Pipeline"> 
+                <p style="width:600px;height:638px;">
+                <img src="images/ExamplePipelineComplexColored.png" alt="Complex Pipeline Configuration Example"/>
+                </p>
+                <p><br />
+                A color coded configuration file:
+                </p>
+                <p>
+                <table><tr><td>
+<pre><span style="color:#666666;">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+
+&lt;!--
+   Document   : branchingPipeline.xml
+   Description: Configuration file for a pipeline that takes
+                user provided files as input, and from that both generates HTML files and
+                puts data into a database.
+--&gt;</span>
+
+&lt;<b>pipeline</b>&gt;
+
+    &lt;<b>driverFactory</b> className=&quot;org.apache.commons.pipeline.driver.<b>DedicatedThreadStageDriverFactory</b>&quot;
+        id=&quot;<span style="color:#808000;"><b>df0</b></span>&quot;/&gt;
+
+
+    &lt;<b>driverFactory</b> className=&quot;org.apache.commons.pipeline.driver.<b>DedicatedThreadStageDriverFactory</b>&quot;
+        id=&quot;<span style="color:#008080;"><b>df1</b></span>&quot;&gt;
+        &lt;property propName=&quot;queueFactory&quot;
+            className=&quot;org.apache.commons.pipeline.util.BlockingQueueFactory$ArrayBlockingQueueFactory&quot;
+            capacity=&quot;4&quot; fair=&quot;false&quot;/&gt;
+    &lt;/driverFactory&gt;
+
+
+    &lt;!-- 
+        The &lt;env&gt; element can be used to add global environment variable values to the pipeline.
+        In this instance almost all of the stages need a key to tell them what type of data
+        to process.
+    --&gt;
+    <span style="color:#006B6B;">&lt;<b>env</b>&gt;
+        &lt;value key=&quot;<b>division</b>&quot;&gt;<b>West</b>&lt;/value&gt; &lt;!-- ((9)) --&gt;
+    &lt;/env&gt;</span>
+
+
+    &lt;!-- 
+        ((1)) The initial stage traverses a directory so that it can feed the filenames of
+        of the files to be processed to the subsequent stages.
+
+        The directory path to be traversed is in the feed block at the end of this file.
+
+        The filePattern in the stage block is the pattern to look for within that directory.
+    --&gt;
+    <span style="color:#990000;">&lt;<b>stage</b> className=&quot;org.apache.commons.pipeline.stage.<b>FileFinderStage</b>&quot;
+        driverFactoryId=&quot;<span style="color:#808000;"><b>df0</b></span>&quot;
+        <span style="color:#FF6600;">filePattern=&quot;<b>SALES\.(ASWK|ST(GD|GL|LD))\.N.?\.D\d{5}</b>&quot;</span>/&gt;</span> <span style="color:#FF6600;">&lt;!-- ((8)) --&gt;</span>
+
+    <span style="color:#00CC00;">&lt;<b>feed</b>&gt;
+        &lt;value&gt;<b>/data/INPUT/raw</b>&lt;/value&gt; &lt;!-- ((7)), ((11)) --&gt;
+    &lt;/feed&gt;</span>
+
+
+    &lt;!--  
+        ((2)) This stage is going to select a subset of the files from the previous stage
+        and orders them for time sequential processing using the date embedded in
+        the last several characters of the file name.
+
+        The filesToProcess is the number of files to emit to the next stage, before
+        terminating processing.  Zero (0) has the special meaning that ALL available
+        files should be processed.
+    --&gt;
+    <span style="color:#0000FF;">&lt;<b>stage</b> className=&quot;com.demo.pipeline.stages.<b>FileSorterStage</b>&quot;
+        driverFactoryId=&quot;<span style="color:#008080;"><b>df1</b></span>&quot;
+        filesToProcess=&quot;0&quot;/&gt;</span>
+
+
+    &lt;!-- 
+        ((3)) Read the files and create the objects to be passed to stage that writes to
+        the database and to the stage that writes the data to
+        HTML files.
+
+        WARNING:  The value for htmlPipelineKey in the stage declaration here
+        must exactly match the branch pipeline key further down in this file.
+    --&gt;
+    <span style="color:#9900CC;">&lt;<b>stage</b> className=&quot;com.demo.pipeline.stages.<b>FileReaderStage</b>&quot;
+        driverFactoryId=&quot;<span style="color:#008080;"><b>df1</b></span>&quot;
+        htmlPipelineKey=&quot;<span style="color:#FF00FF;"><b>sales2html</b></span>&quot;/&gt;</span>
+
+
+    &lt;!-- 
+        ((4)) Write the data from the FileReaderStage stage into the database.
+    --&gt;
+    <span style="color:#CC6633;">&lt;<b>stage</b> className=&quot;com.demo.pipeline.stages.<b>DatabaseWriterStage</b>&quot;
+        driverFactoryId=&quot;<span style="color:#008080;"><b>df1</b></span>&quot;&gt;
+
+        &lt;datasource user="test"
+        password="abc123"
+        type="oracle"
+        host="brain.demo.com"
+        port="1521"
+        database="SALES" /&gt;
+
+        &lt;database-proxy className="gov.noaa.gdsg.sql.oracle.OracleDatabaseProxy" /&gt;
+
+        &lt;tablePath path="<span style="color:#339933;"><b>summary.inventory</b></span>" /&gt; <span style="color:#339933;">&lt;!-- ((13)) --&gt;</span>
+    &lt;/stage&gt;</span>
+
+
+    &lt;!-- 
+        Write the data from the FileReaderStage stage to HTML files.
+
+        The outputFilePath is the path to which we will be writing our summary HTML files.
+
+        WARNING:  The value for the branch pipeline key declaration here must
+        exactly match the htmlPipelineKey in the FileReaderStage stage in this file.
+    --&gt;
+    <span style="color:#FF00FF;">&lt;<b>branch</b>&gt;
+        &lt;<b>pipeline</b> key=&quot;<b>sales2html</b>&quot;&gt; &lt;!-- ((10)) --&gt;</span>
+
+            <span style="color:#006B6B;">&lt;<b>env</b>&gt;
+                &lt;value key=&quot;<b>division</b>&quot;&gt;<b>West</b>&lt;/value&gt; &lt;!-- ((14)) --&gt;
+            &lt;/env&gt;</span>
+
+            &lt;<b>driverFactory</b> className=&quot;org.apache.commons.pipeline.driver.<b>DedicatedThreadStageDriverFactory</b>&quot;
+                id=&quot;<span style="color:#EB613D;"><b>df2</b></span>&quot;&gt;
+                &lt;property propName=&quot;queueFactory&quot;
+                    className=&quot;org.apache.commons.pipeline.util.BlockingQueueFactory$ArrayBlockingQueueFactory&quot;
+                    capacity=&quot;4&quot; fair=&quot;false&quot;/&gt;
+            &lt;/driverFactory&gt;
+
+
+            &lt;!-- ((5)) HTMLWriterStage --&gt;
+            <span style="color:#009900;">&lt;<b>stage</b> className=&quot;com.demo.pipeline.stages.<b>HTMLWriterStage</b>&quot;
+                driverFactoryId=&quot;<span style="color:#EB613D;"><b>df2</b></span>&quot;
+                <span style="color:#660000;">outputFilePath=&quot;<b>/data/OUTPUT/web</b>&quot;/&gt; &lt;!-- ((12)) --&gt;</span></span>
+
+
+            &lt;!-- ((6)) StatPlotterStage --&gt;
+            <span style="color:#009900;">&lt;<b>stage</b> className=&quot;com.demo.pipeline.stages.<b>StatPlotterStage</b>&quot;
+                driverFactoryId=&quot;<span style="color:#EB613D;"><b>df2</b></span>&quot;
+                <span style="color:#660000;">outputFilePath=&quot;<b>/data/OUTPUT/web</b>&quot;/&gt; &lt;!-- ((12)) --&gt;</span></span>
+                
+        <span style="color:#FF00FF;">&lt;/pipeline&gt;
+    &lt;/branch&gt;</span>
+
+&lt;/pipeline&gt;</pre>
+                </td></tr></table>
+                </p>
+                <p>
+                Notes: The &quot;division&quot; configured to &quot;<span
+                style="color:#006B6B;"><b>West</b></span>&quot; in this example in the
+                &lt;env&gt; definition is set in two places. It should be set to the same value
+                in both the main pipeline and the branch pipeline. This is because
+                branches don't share the same environment constants.
+                </p>
+            </subsection>
+        </section>
+        <section name="TODO">
+            <p>
+            More should be added to this page:
+            <ul>
+                <li> Filtering and other configuration techniques
+                </li>
+                <li> Logfile configuration
+                </li>
+                <li> Other tutorials will be linked in as they are completed
+                </li>
+            </ul>
+            </p>
+        </section>
+        <section name="Related topics">
+            <p>
+            Links to other pipeline resources
+            <ul>
+                <li> <a href="http://commons.apache.org/sandbox/pipeline/index.html">Apache
+                Commons <b>Pipeline</b> project</a> page
+                </li>
+                <li> PipelineCookbook - will catalog existing stages and show snippets of Digester XML
+                </li>
+            </ul>
+            <hr />
+            </p>
+        </section>
+        <section name="Credits">
+            <p>
+            Several diagrams and descriptions were drawn from powerpoint presentations by
+            Bill and Kris as well as from the Pipeline code comments.
+            <ul>
+                <li> <i>Multithreaded Data Processing Using Jakarta Commons Pipeline</i>,
+                November 2006, Kris Nuttycombe
+                </li>
+                <li> <i>Pipelining the Level 3 SST / Aerosol data: An illustration of how to use
+                the org.apache.commons.pipeline</i>, November 2006, Bill Barrett
+                </li>
+            </ul>
+            </p>
+        </section>
+    </body>
+</document>
+
