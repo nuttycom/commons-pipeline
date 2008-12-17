@@ -21,6 +21,11 @@ package org.apache.commons.pipeline;
  * Exception wrapper class for exceptions that occur while processing a stage.
  */
 public class StageException extends java.lang.Exception {
+    /**
+     *
+     */
+    private static final long serialVersionUID = -7427836310660170668L;
+    
     //Stage within which the error occurred
     private Stage source;    
     

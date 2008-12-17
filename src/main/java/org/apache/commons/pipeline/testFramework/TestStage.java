@@ -18,10 +18,13 @@
 package org.apache.commons.pipeline.testFramework;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.commons.pipeline.*;
+import org.apache.commons.pipeline.Stage;
+import org.apache.commons.pipeline.StageContext;
+import org.apache.commons.pipeline.StageException;
 import org.apache.commons.pipeline.validation.ConsumedTypes;
 import org.apache.commons.pipeline.validation.ProducesConsumed;
 
@@ -32,7 +35,7 @@ public class TestStage implements Stage {
     private int index;
     private StageContext context;
 
-    public List<Object> processedObjects = new ArrayList<Object>();
+    public List<Object> processedObjects = Collections.synchronizedList(new ArrayList<Object>());
     public boolean initialized = false;
     public boolean preprocessed = false;
     public boolean postprocessed = false;

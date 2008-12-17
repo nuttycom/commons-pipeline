@@ -27,7 +27,7 @@ import org.apache.commons.pipeline.driver.SynchronousStageDriver;
 /**
  * Test cases for InvokeStaticMethodStage.
  */
-public class InvokeStaticMethodStageTest extends AbstractStageTest {    
+public class InvokeStaticMethodStageTest extends AbstractStageTest {
     
     public InvokeStaticMethodStageTest(String testName) {
         super(testName);

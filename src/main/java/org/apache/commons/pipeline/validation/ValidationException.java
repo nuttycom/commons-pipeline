@@ -25,6 +25,10 @@ import java.util.List;
  *
  */
 public class ValidationException extends java.lang.Exception {
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 6179302502035580464L;
     private List<ValidationFailure> errors;
     
     /**

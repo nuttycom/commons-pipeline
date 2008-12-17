@@ -23,6 +23,11 @@ package org.apache.commons.pipeline;
 public class PipelineCreationException extends java.lang.Exception {
     
     /**
+	 * 
+	 */
+	private static final long serialVersionUID = 3267337406210624834L;
+
+	/**
      * Creates a new instance of <code>PipelineCreationException</code> without detail message.
      */
     public PipelineCreationException() {

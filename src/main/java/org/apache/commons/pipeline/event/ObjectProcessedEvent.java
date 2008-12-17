@@ -18,13 +18,19 @@
 package org.apache.commons.pipeline.event;
 
 import java.util.EventObject;
-import org.apache.commons.pipeline.*;
+
+import org.apache.commons.pipeline.Stage;
 
 /**
  *
  *
  */
 public class ObjectProcessedEvent extends EventObject {
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = -4285049697529229252L;
+
     private Object data;
     
     /** Creates a new instance of ObjectProcessedEvent */

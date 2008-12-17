@@ -44,7 +44,7 @@ import org.xml.sax.Attributes;
  * The rules defined by this object are used for parsing the following tags:
  * <ul>
  *     <li>
- *         <code>&lt;pipeline&gt;&lt;/pipeline&gt;</code><br/>
+ *         <B><code>&lt;pipeline&gt;&lt;/pipeline&gt;</code></B><br/>
  *         The root element of the XML configuration file for a pipeline. This tag
  *         supports two optional attributes that are for use only when configuring
  *         branch pipelines, <code>key</code> and <code>configURI</code>. These
@@ -52,7 +52,7 @@ import org.xml.sax.Attributes;
  *         documentation.
  *     </li>
  *     <li>
- *         <code>&lt;driverFactory className="<em>MyDriverFactory</em>" id="<em>my_id</em>" ... /&gt;</code><br/>
+ *         <B><code>&lt;driverFactory className="<em>MyDriverFactory</em>" id="<em>my_id</em>" ... /&gt;</code></B><br/>
  *         This tag is used to create and configure a {@link StageDriverFactory} that
  *         will be used to create {@link StageDriver} instances for stages
  *         in the parent pipeline. Each {@link StageDriverFactory} is identified by a unique
@@ -64,7 +64,7 @@ import org.xml.sax.Attributes;
  *         (using standard Java bean naming conventions) of the driver instance created.
  *     </li>
  *     <li>
- *         <code>&lt;stage className="<em>MyStageClass</em>" driverFactoryId="<i>name</i>" ... &gt;&lt;/stage&gt;</code><br/>
+ *         <B><code>&lt;stage className="<em>MyStageClass</em>" driverFactoryId="<i>name</i>" ... &gt;&lt;/stage&gt;</code></B><br/>
  *         A single stage is created, configured, and added to the parent pipeline using
  *         this tag. Stages created in this manner are added to the pipeline in the order
  *         that they occur in the configuration file. The class of the stage (which must
@@ -74,17 +74,21 @@ import org.xml.sax.Attributes;
  *         used by Digester to set bean properties on the newly created Stage object.
  *     </li>
  *     <li>
- *         <code>&lt;feed/&gt;</code><br/>
- *         Enqueue an object onto the first stage in the pipeline. There are two
- *         types of usage available, provided by the following subtags:
+ *         <B><code>&lt;feed/&gt;</code></B><br/>
+ *         Enqueue an object onto the first stage in the pipeline. Note that this
+ *         must come <em>after</em> the first stage declaration in the configuration file,
+ *         otherwise the queue for the first stage does not exist yet and the fed
+ *         values will be discarded.
+ *         <p/>
+ *         There are two types of usage available, provided by the following subtags:
  *         <ul>
  *             <li>
- *                 <code>&lt;value&gt;my_value&lt;/value&gt;</code><br/>
+ *                 <B><code>&lt;value&gt;my_value&lt;/value&gt;</code></B><br/>
  *                 Feed the string value of the body of this tag to the first stage in the
  *                 pipeline.
  *             </li>
  *             <li>
- *                 <code>&lt;object className="MyClass" ... /&gt;</code><br/>
+ *                 <B><code>&lt;object className="MyClass" ... /&gt;</code></B><br/>
  *                 This tag uses the standard Digester ObjectCreateRule to create an
  *                 arbitrary object of the specified class (which must provide a
  *                 no-argument constructor) to the first stage in the pipeline.
@@ -94,15 +98,16 @@ import org.xml.sax.Attributes;
  *         </ul>
  *     </li>
  *     <li>
- *         <code>&lt;branch/&gt;</code><br/>
+ *         <B><code>&lt;branch/&gt;</code></B><br/>
  *         Add a branch to a pipeline. The contents of this tag should
  *         be one or more <code>&lt;pipeline/&gt;</code> declarations. Branch
  *         pipelines added in this fashion must be configured with an attribute
  *         named <code>key</code> that holds the name by which the branch pipeline
- *         will be referred to.<br/>
- *  Branch pipelines may be configured either inline in the main configuration
- *  file or in a separate file referred to by the <code>configURI</code> pipeline
- *  attribute.
+ *         will be referred to.
+ *         <p/>
+ *         Branch pipelines may be configured either inline in the main 
+ *         configuration file or in a separate file referred to by the
+ *         <code>configURI</code> pipeline attribute.
  *     </li>
  * </ul>
  */

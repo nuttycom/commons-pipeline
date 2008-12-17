@@ -19,18 +19,23 @@ package org.apache.commons.pipeline.testFramework;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EventObject;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.apache.commons.pipeline.*;
+
+import org.apache.commons.pipeline.Feeder;
+import org.apache.commons.pipeline.Stage;
+import org.apache.commons.pipeline.StageContext;
+import org.apache.commons.pipeline.StageEventListener;
 
 
 /**
  * Stage Context for test harness.
  */
 public class TestStageContext implements StageContext {
-    public List<StageEventListener> listeners = new ArrayList<StageEventListener>();
+    public List<StageEventListener> listeners = Collections.synchronizedList( new ArrayList<StageEventListener>() );
     public List<EventObject> raisedEvents = new ArrayList<EventObject>();
     public Map<String, TestFeeder> branchFeeders = new HashMap<String,TestFeeder>();
     public Map<Stage, Feeder> downstreamFeeders = new HashMap<Stage,Feeder>();
@@ -42,6 +47,15 @@ public class TestStageContext implements StageContext {
     
     public void raise(EventObject ev) {
         this.raisedEvents.add(ev);
+        notifyListeners( ev );
+    }
+    
+    private void notifyListeners( EventObject event )
+    {
+        for( StageEventListener listener : listeners )
+        {
+            listener.notify( event );
+        }
     }
     
     /**

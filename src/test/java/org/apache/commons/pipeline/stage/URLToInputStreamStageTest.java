@@ -21,8 +21,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
+//import junit.framework.Test;
+//import junit.framework.TestSuite;
+import org.junit.Test;
 
 
 /**
@@ -36,21 +37,23 @@ public class URLToInputStreamStageTest extends AbstractStageTest {
         super(testName);
     }
     
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
         this.url = this.getClass().getClassLoader().getResource("url-input-to-stream-test.txt");
         assertNotNull(url);
     }
     
-    public static Test suite() {
-        TestSuite suite = new TestSuite(URLToInputStreamStageTest.class);
-        
-        return suite;
-    }
+//    public static Test suite() {
+//        TestSuite suite = new TestSuite(URLToInputStreamStageTest.class);
+//
+//        return suite;
+//    }
     
     /**
      * Test of process method, of class org.apache.commons.pipeline.stage.URLToInputStreamStage.
      */
+    @Test
     public void testProcess() throws Exception {
         URLToInputStreamStage stage = new URLToInputStreamStage();
         this.init(stage);
@@ -72,6 +75,7 @@ public class URLToInputStreamStageTest extends AbstractStageTest {
     /**
      * Test of postprocess method, of class org.apache.commons.pipeline.stage.URLToInputStreamStage.
      */
+    @Test
     public void testPostprocess() throws Exception {
         URLToInputStreamStage stage = new URLToInputStreamStage();
         this.init(stage);

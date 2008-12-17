@@ -71,7 +71,7 @@ public class PipelineTest extends TestCase {
     /**
      * Test of raise method, of class org.apache.commons.pipeline.Pipeline.
      */
-    public void testRaise() {
+    public void testRaise() throws Exception {
         Stage testStage = new TestStage(0);
         EventObject ev = new ObjectProcessedEvent(testStage, "Hello, World!");
         Pipeline instance = new Pipeline();
@@ -80,10 +80,12 @@ public class PipelineTest extends TestCase {
         
         instance.raise(ev);
         
-        Thread.yield(); //give the notifier thread created by raise priority
+        synchronized(counter) {
+            while (counter.getCounts().get(testStage) == null) counter.wait(100);
+        }
         
-        assertNotNull(counter.getCounts().get(testStage));
-        assertEquals(1, counter.getCounts().get(testStage).intValue());
+        assertNotNull("No events were received.", counter.getCounts().get(testStage));
+        assertEquals("Only one event should have been received.", 1, counter.getCounts().get(testStage).intValue());
     }
     
     public void testRaiseOnBranch() throws Exception {
@@ -102,7 +104,9 @@ public class PipelineTest extends TestCase {
         EventObject ev = new ObjectProcessedEvent(testStage, "Hello, World!");
         branch1.raise(ev);
         
-        Thread.yield(); //give the notifier thread created by raise priority
+        synchronized(counter) {
+            while (counter.getCounts().get(testStage) == null) counter.wait(100);
+        }
         
         assertNotNull(counter.getCounts().get(testStage));
         assertEquals(1, counter.getCounts().get(testStage).intValue());

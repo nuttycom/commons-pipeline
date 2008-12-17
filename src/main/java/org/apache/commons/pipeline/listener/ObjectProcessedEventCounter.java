@@ -21,8 +21,7 @@ import java.util.Collections;
 import java.util.EventObject;
 import java.util.HashMap;
 import java.util.Map;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+
 import org.apache.commons.pipeline.Stage;
 import org.apache.commons.pipeline.StageEventListener;
 import org.apache.commons.pipeline.event.ObjectProcessedEvent;
@@ -34,7 +33,7 @@ import org.apache.commons.pipeline.event.ObjectProcessedEvent;
  *
  */
 public class ObjectProcessedEventCounter implements StageEventListener {
-    private final Log log = LogFactory.getLog(ObjectProcessedEventCounter.class);
+    //private final Log log = LogFactory.getLog(ObjectProcessedEventCounter.class);
     
     private Map<Stage,Integer> counts = Collections.synchronizedMap(new HashMap<Stage, Integer>());
     
@@ -45,7 +44,7 @@ public class ObjectProcessedEventCounter implements StageEventListener {
     }
     }
     
-    public Map<Stage, Integer> getCounts() {
+    public synchronized Map<Stage, Integer> getCounts() {
         return this.counts;
     }
 }

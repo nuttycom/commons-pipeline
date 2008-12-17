@@ -28,6 +28,10 @@ import java.util.EventObject;
  * and/or the {@link org.apache.commons.pipeline.stage.KeyWaitBufferStage KeyWaitBufferStage}.
  */
 public class KeyAvailableEvent<T> extends EventObject {
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = -7704631412431162164L;
     private T key;
     
     /** Creates a new instance of KeyAvailableEvent */

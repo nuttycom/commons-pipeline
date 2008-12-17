@@ -21,6 +21,9 @@ import org.apache.commons.pipeline.AbstractLoggingTestCase;
 import org.apache.commons.pipeline.Stage;
 import org.apache.commons.pipeline.testFramework.TestFeeder;
 import org.apache.commons.pipeline.testFramework.TestStageContext;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Simple abstract base class for stage tests.
@@ -36,12 +39,16 @@ public abstract class AbstractStageTest extends AbstractLoggingTestCase {
     public AbstractStageTest(String testName) {
         super(testName);
     }
-    
+
+    @Before
+    @Override
     protected void setUp() throws Exception {
         this.testContext = new TestStageContext();
         this.testFeeder = new TestFeeder();
     }
-    
+
+    @After
+    @Override
     protected void tearDown() throws Exception {
         this.testContext = null;
         this.testFeeder = null;
@@ -51,4 +58,12 @@ public abstract class AbstractStageTest extends AbstractLoggingTestCase {
         testContext.registerDownstreamFeeder(stage, testFeeder);
         stage.init(testContext);        
     }
+
+    /** This is to make the test framework happy, it seems to require at least
+     * one test in this file if this class is not abstract.
+     */
+//    @Test
+//    public void testNothing() {
+//        assertTrue(true);
+//    }
 }

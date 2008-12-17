@@ -18,13 +18,18 @@
 package org.apache.commons.pipeline.event;
 
 import java.util.EventObject;
-import org.apache.commons.pipeline.*;
+
+import org.apache.commons.pipeline.Stage;
 
 /**
  *
  *
  */
 public class PipelineShutdownRequest extends EventObject {
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 2268560742973118473L;
     private String message;
     
     /** Creates a new instance of ObjectProcessedEvent */
