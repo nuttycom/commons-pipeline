@@ -477,27 +477,27 @@ limitations under the License.
     Description: A sample configuration file for a very simple pipeline
 --&gt;</span>
 
-&lt;<b>pipeline</b>&gt;
+&lt;<span style="font-weight:bold;">pipeline</span>&gt;
 
-    &lt;<b>driverFactory</b> className=&quot;org.apache.commons.pipeline.driver.<b>DedicatedThreadStageDriverFactory</b>&quot;
-                   id=&quot;<span style="color:#008080;"><b>driverFactory</b></span>&quot;/&gt;
+    &lt;<span style="font-weight:bold;">driverFactory</span> className=&quot;org.apache.commons.pipeline.driver.<span style="font-weight:bold;">DedicatedThreadStageDriverFactory</span>&quot;
+                   id=&quot;<span style="color:#008080;"><span style="font-weight:bold;">driverFactory</span></span>&quot;/&gt;
 
     &lt;!--
         ((1)) The first stage recursively searches the directory given in the feed statement.
         The filePattern given will match any files beginning with &quot;HelloWorld&quot;.
     --&gt;
-    <span style="color:#990000;">&lt;<b>stage</b> className=&quot;org.apache.commons.pipeline.stage.<b>FileFinderStage</b>&quot;
-           driverFactoryId=&quot;<span style="color:#008080;"><b>driverFactory</b></span>&quot;
-           <span style="color:#FF6600;">filePattern=&quot;<b>HelloWorld.*</b>&quot;</span>/&gt;</span> <span style="color:#FF6600;">&lt;!-- ((3)) --&gt;</span>
+    <span style="color:#990000;">&lt;<span style="font-weight:bold;">stage</span> className=&quot;org.apache.commons.pipeline.stage.<span style="font-weight:bold;">FileFinderStage</span>&quot;
+           driverFactoryId=&quot;<span style="color:#008080;"><span style="font-weight:bold;">driverFactory</span></span>&quot;
+           <span style="color:#FF6600;">filePattern=&quot;<span style="font-weight:bold;">HelloWorld.*</span>&quot;</span>/&gt;</span> <span style="color:#FF6600;">&lt;!-- ((3)) --&gt;</span>
 
     &lt;!-- Starting directory for the first stage. --&gt;
-    <span style="color:#00CC00;">&lt;<b>feed</b>&gt;
-        &lt;value&gt;<b>/data/sample</b>&lt;/value&gt; &lt;!-- ((4)) --&gt;
+    <span style="color:#00CC00;">&lt;<span style="font-weight:bold;">feed</span>&gt;
+        &lt;value&gt;<span style="font-weight:bold;">/data/sample</span>&lt;/value&gt; &lt;!-- ((4)) --&gt;
     &lt;/feed&gt;</span>
 
     &lt;!-- ((2)) Report the files found. --&gt;
-    <span style="color:#0000FF;">&lt;<b>stage</b> className=&quot;org.apache.commons.pipeline.stage.<b>LogStage</b>&quot;
-           driverFactoryId=&quot;<span style="color:#008080;"><b>driverFactory</b></span>&quot; /&gt;</span>
+    <span style="color:#0000FF;">&lt;<span style="font-weight:bold;">stage</span> className=&quot;org.apache.commons.pipeline.stage.<span style="font-weight:bold;">LogStage</span>&quot;
+           driverFactoryId=&quot;<span style="color:#008080;"><span style="font-weight:bold;">driverFactory</span></span>&quot; /&gt;</span>
 
 &lt;/pipeline&gt;</pre>
                 </td></tr></table>
@@ -507,7 +507,7 @@ limitations under the License.
                 &quot;driverFactory&quot;, and this value is used by the driverFactoryId in both
                 stages.
                 </p>
-                <p><br /><br />
+                <p><br />
                 In theory a pipeline could consist of just one stage, but this degenerate case
                 is not much different from a plain program except that it can be easily expanded
                 with additional stages.
@@ -531,14 +531,14 @@ limitations under the License.
                 puts data into a database.
 --&gt;</span>
 
-&lt;<b>pipeline</b>&gt;
+&lt;<span style="font-weight:bold;">pipeline</span>&gt;
 
-    &lt;<b>driverFactory</b> className=&quot;org.apache.commons.pipeline.driver.<b>DedicatedThreadStageDriverFactory</b>&quot;
-        id=&quot;<span style="color:#808000;"><b>df0</b></span>&quot;/&gt;
+    &lt;<span style="font-weight:bold;">driverFactory</span> className=&quot;org.apache.commons.pipeline.driver.<span style="font-weight:bold;">DedicatedThreadStageDriverFactory</span>&quot;
+        id=&quot;<span style="color:#808000;"><span style="font-weight:bold;">df0</span></span>&quot;/&gt;
 
 
-    &lt;<b>driverFactory</b> className=&quot;org.apache.commons.pipeline.driver.<b>DedicatedThreadStageDriverFactory</b>&quot;
-        id=&quot;<span style="color:#008080;"><b>df1</b></span>&quot;&gt;
+    &lt;<span style="font-weight:bold;">driverFactory</span> className=&quot;org.apache.commons.pipeline.driver.<span style="font-weight:bold;">DedicatedThreadStageDriverFactory</span>&quot;
+        id=&quot;<span style="color:#008080;"><span style="font-weight:bold;">df1</span></span>&quot;&gt;
         &lt;property propName=&quot;queueFactory&quot;
             className=&quot;org.apache.commons.pipeline.util.BlockingQueueFactory$ArrayBlockingQueueFactory&quot;
             capacity=&quot;4&quot; fair=&quot;false&quot;/&gt;
@@ -550,8 +550,8 @@ limitations under the License.
         In this instance almost all of the stages need a key to tell them what type of data
         to process.
     --&gt;
-    <span style="color:#006B6B;">&lt;<b>env</b>&gt;
-        &lt;value key=&quot;<b>division</b>&quot;&gt;<b>West</b>&lt;/value&gt; &lt;!-- ((9)) --&gt;
+    <span style="color:#006B6B;">&lt;<span style="font-weight:bold;">env</span>&gt;
+        &lt;value key=&quot;<span style="font-weight:bold;">division</span>&quot;&gt;<span style="font-weight:bold;">West</span>&lt;/value&gt; &lt;!-- ((9)) --&gt;
     &lt;/env&gt;</span>
 
 
@@ -563,12 +563,12 @@ limitations under the License.
 
         The filePattern in the stage block is the pattern to look for within that directory.
     --&gt;
-    <span style="color:#990000;">&lt;<b>stage</b> className=&quot;org.apache.commons.pipeline.stage.<b>FileFinderStage</b>&quot;
-        driverFactoryId=&quot;<span style="color:#808000;"><b>df0</b></span>&quot;
-        <span style="color:#FF6600;">filePattern=&quot;<b>SALES\.(ASWK|ST(GD|GL|LD))\.N.?\.D\d{5}</b>&quot;</span>/&gt;</span> <span style="color:#FF6600;">&lt;!-- ((8)) --&gt;</span>
+    <span style="color:#990000;">&lt;<span style="font-weight:bold;">stage</span> className=&quot;org.apache.commons.pipeline.stage.<span style="font-weight:bold;">FileFinderStage</span>&quot;
+        driverFactoryId=&quot;<span style="color:#808000;"><span style="font-weight:bold;">df0</span></span>&quot;
+        <span style="color:#FF6600;">filePattern=&quot;<span style="font-weight:bold;">SALES\.(ASWK|ST(GD|GL|LD))\.N.?\.D\d{5}</span>&quot;</span>/&gt;</span> <span style="color:#FF6600;">&lt;!-- ((8)) --&gt;</span>
 
-    <span style="color:#00CC00;">&lt;<b>feed</b>&gt;
-        &lt;value&gt;<b>/data/INPUT/raw</b>&lt;/value&gt; &lt;!-- ((7)), ((11)) --&gt;
+    <span style="color:#00CC00;">&lt;<span style="font-weight:bold;">feed</span>&gt;
+        &lt;value&gt;<span style="font-weight:bold;">/data/INPUT/raw</span>&lt;/value&gt; &lt;!-- ((7)), ((11)) --&gt;
     &lt;/feed&gt;</span>
 
 
@@ -581,8 +581,8 @@ limitations under the License.
         terminating processing.  Zero (0) has the special meaning that ALL available
         files should be processed.
     --&gt;
-    <span style="color:#0000FF;">&lt;<b>stage</b> className=&quot;com.demo.pipeline.stages.<b>FileSorterStage</b>&quot;
-        driverFactoryId=&quot;<span style="color:#008080;"><b>df1</b></span>&quot;
+    <span style="color:#0000FF;">&lt;<span style="font-weight:bold;">stage</span> className=&quot;com.demo.pipeline.stages.<span style="font-weight:bold;">FileSorterStage</span>&quot;
+        driverFactoryId=&quot;<span style="color:#008080;"><span style="font-weight:bold;">df1</span></span>&quot;
         filesToProcess=&quot;0&quot;/&gt;</span>
 
 
@@ -594,16 +594,16 @@ limitations under the License.
         WARNING:  The value for htmlPipelineKey in the stage declaration here
         must exactly match the branch pipeline key further down in this file.
     --&gt;
-    <span style="color:#9900CC;">&lt;<b>stage</b> className=&quot;com.demo.pipeline.stages.<b>FileReaderStage</b>&quot;
-        driverFactoryId=&quot;<span style="color:#008080;"><b>df1</b></span>&quot;
-        htmlPipelineKey=&quot;<span style="color:#FF00FF;"><b>sales2html</b></span>&quot;/&gt;</span>
+    <span style="color:#9900CC;">&lt;<span style="font-weight:bold;">stage</span> className=&quot;com.demo.pipeline.stages.<span style="font-weight:bold;">FileReaderStage</span>&quot;
+        driverFactoryId=&quot;<span style="color:#008080;"><span style="font-weight:bold;">df1</span></span>&quot;
+        htmlPipelineKey=&quot;<span style="color:#FF00FF;"><span style="font-weight:bold;">sales2html</span></span>&quot;/&gt;</span>
 
 
     &lt;!-- 
         ((4)) Write the data from the FileReaderStage stage into the database.
     --&gt;
-    <span style="color:#CC6633;">&lt;<b>stage</b> className=&quot;com.demo.pipeline.stages.<b>DatabaseWriterStage</b>&quot;
-        driverFactoryId=&quot;<span style="color:#008080;"><b>df1</b></span>&quot;&gt;
+    <span style="color:#CC6633;">&lt;<span style="font-weight:bold;">stage</span> className=&quot;com.demo.pipeline.stages.<span style="font-weight:bold;">DatabaseWriterStage</span>&quot;
+        driverFactoryId=&quot;<span style="color:#008080;"><span style="font-weight:bold;">df1</span></span>&quot;&gt;
 
         &lt;datasource user="test"
         password="abc123"
@@ -614,7 +614,7 @@ limitations under the License.
 
         &lt;database-proxy className="gov.noaa.gdsg.sql.oracle.OracleDatabaseProxy" /&gt;
 
-        &lt;tablePath path="<span style="color:#339933;"><b>summary.inventory</b></span>" /&gt; <span style="color:#339933;">&lt;!-- ((13)) --&gt;</span>
+        &lt;tablePath path="<span style="color:#339933;"><span style="font-weight:bold;">summary.inventory</span></span>" /&gt; <span style="color:#339933;">&lt;!-- ((13)) --&gt;</span>
     &lt;/stage&gt;</span>
 
 
@@ -626,15 +626,15 @@ limitations under the License.
         WARNING:  The value for the branch pipeline key declaration here must
         exactly match the htmlPipelineKey in the FileReaderStage stage in this file.
     --&gt;
-    <span style="color:#FF00FF;">&lt;<b>branch</b>&gt;
-        &lt;<b>pipeline</b> key=&quot;<b>sales2html</b>&quot;&gt; &lt;!-- ((10)) --&gt;</span>
+    <span style="color:#FF00FF;">&lt;<span style="font-weight:bold;">branch</span>&gt;
+        &lt;<span style="font-weight:bold;">pipeline</span> key=&quot;<span style="font-weight:bold;">sales2html</span>&quot;&gt; &lt;!-- ((10)) --&gt;</span>
 
-            <span style="color:#006B6B;">&lt;<b>env</b>&gt;
-                &lt;value key=&quot;<b>division</b>&quot;&gt;<b>West</b>&lt;/value&gt; &lt;!-- ((14)) --&gt;
+            <span style="color:#006B6B;">&lt;<span style="font-weight:bold;">env</span>&gt;
+                &lt;value key=&quot;<span style="font-weight:bold;">division</span>&quot;&gt;<span style="font-weight:bold;">West</span>&lt;/value&gt; &lt;!-- ((14)) --&gt;
             &lt;/env&gt;</span>
 
-            &lt;<b>driverFactory</b> className=&quot;org.apache.commons.pipeline.driver.<b>DedicatedThreadStageDriverFactory</b>&quot;
-                id=&quot;<span style="color:#EB613D;"><b>df2</b></span>&quot;&gt;
+            &lt;<span style="font-weight:bold;">driverFactory</span> className=&quot;org.apache.commons.pipeline.driver.<span style="font-weight:bold;">DedicatedThreadStageDriverFactory</span>&quot;
+                id=&quot;<span style="color:#EB613D;"><span style="font-weight:bold;">df2</span></span>&quot;&gt;
                 &lt;property propName=&quot;queueFactory&quot;
                     className=&quot;org.apache.commons.pipeline.util.BlockingQueueFactory$ArrayBlockingQueueFactory&quot;
                     capacity=&quot;4&quot; fair=&quot;false&quot;/&gt;
@@ -642,15 +642,15 @@ limitations under the License.
 
 
             &lt;!-- ((5)) HTMLWriterStage --&gt;
-            <span style="color:#009900;">&lt;<b>stage</b> className=&quot;com.demo.pipeline.stages.<b>HTMLWriterStage</b>&quot;
-                driverFactoryId=&quot;<span style="color:#EB613D;"><b>df2</b></span>&quot;
-                <span style="color:#660000;">outputFilePath=&quot;<b>/data/OUTPUT/web</b>&quot;/&gt; &lt;!-- ((12)) --&gt;</span></span>
+            <span style="color:#009900;">&lt;<span style="font-weight:bold;">stage</span> className=&quot;com.demo.pipeline.stages.<span style="font-weight:bold;">HTMLWriterStage</span>&quot;
+                driverFactoryId=&quot;<span style="color:#EB613D;"><span style="font-weight:bold;">df2</span></span>&quot;
+                <span style="color:#660000;">outputFilePath=&quot;<span style="font-weight:bold;">/data/OUTPUT/web</span>&quot;/&gt; &lt;!-- ((12)) --&gt;</span></span>
 
 
             &lt;!-- ((6)) StatPlotterStage --&gt;
-            <span style="color:#009900;">&lt;<b>stage</b> className=&quot;com.demo.pipeline.stages.<b>StatPlotterStage</b>&quot;
-                driverFactoryId=&quot;<span style="color:#EB613D;"><b>df2</b></span>&quot;
-                <span style="color:#660000;">outputFilePath=&quot;<b>/data/OUTPUT/web</b>&quot;/&gt; &lt;!-- ((12)) --&gt;</span></span>
+            <span style="color:#009900;">&lt;<span style="font-weight:bold;">stage</span> className=&quot;com.demo.pipeline.stages.<span style="font-weight:bold;">StatPlotterStage</span>&quot;
+                driverFactoryId=&quot;<span style="color:#EB613D;"><span style="font-weight:bold;">df2</span></span>&quot;
+                <span style="color:#660000;">outputFilePath=&quot;<span style="font-weight:bold;">/data/OUTPUT/web</span>&quot;/&gt; &lt;!-- ((12)) --&gt;</span></span>
                 
         <span style="color:#FF00FF;">&lt;/pipeline&gt;
     &lt;/branch&gt;</span>
@@ -665,6 +665,17 @@ limitations under the License.
                 in both the main pipeline and the branch pipeline. This is because
                 branches don't share the same environment constants.
                 </p>
+                <p>
+                The driverFactories &quot;df1&quot; and &quot;df2&quot; override the default queueFactory 
+                by specifying the <b>ArrayBlockingQueueFactory</b>. They do this in order to 
+                limit the queue sizes of the stages that use df1 or df2, setting a <b>capacity</b> of 4 
+                objects. This is often done to limit the resources used by the pipeline, and 
+                may be necessary if an unbounded queue is using all of the available java 
+                memory or exceeds the number of open filehandles allowed. The queue size 
+                cannot be changed after the queue is created. The <b>fair</b> attribute can be 
+                set to &quot;false&quot;, since just one thread is accessing the queue. 
+                If fair = &quot;true&quot; then there is additional overhead to make sure all 
+                threads that access the queue are processed in order (requests are FIFO).</p>
             </subsection>
         </section>
         <section name="TODO">
