@@ -20,8 +20,11 @@ package org.apache.commons.pipeline;
 import java.io.File;
 import java.io.InputStream;
 import java.util.ResourceBundle;
+
 import javax.xml.parsers.DocumentBuilderFactory;
-import junit.framework.*;
+
+import junit.framework.TestCase;
+
 import org.apache.log4j.xml.DOMConfigurator;
 import org.w3c.dom.Document;
 

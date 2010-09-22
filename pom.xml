@@ -82,6 +82,15 @@ limitations under the License.
           <locales>en</locales>
         </configuration>
       </plugin>
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+            <excludes>
+                <exclude>**/driver/control/**</exclude>
+                <exclude>**/Abstract*Test.java</exclude>
+            </excludes>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
   <repositories>

@@ -19,6 +19,7 @@ package org.apache.commons.pipeline.stage;
 
 import java.util.Collection;
 import java.util.Collections;
+
 import org.apache.commons.pipeline.validation.ConsumedTypes;
 import org.apache.commons.pipeline.validation.ProducesConsumed;
 

@@ -21,7 +21,11 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.net.URL;
-import junit.framework.*;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
 import org.apache.commons.pipeline.testFramework.TestFeeder;
 import org.apache.commons.pipeline.testFramework.TestStageContext;
 

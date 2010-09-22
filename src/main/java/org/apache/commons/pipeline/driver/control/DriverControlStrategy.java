@@ -15,20 +15,10 @@
  * limitations under the License.
  */
 
-package org.apache.commons.pipeline.testFramework;
+package org.apache.commons.pipeline.driver.control;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.pipeline.Feeder;
-
-/**
- * This feeder simply adds the received objects to a list.
- */
-public class TestFeeder implements Feeder {
-    public List<Object> receivedValues = new ArrayList<Object>();
-
-    public void feed(Object obj) {
-        this.receivedValues.add(obj);
-    }
+public interface DriverControlStrategy {
+    public void handleEvents(List<PrioritizableStageDriver> drivers, List<StageProcessTimingEvent> events);
 }

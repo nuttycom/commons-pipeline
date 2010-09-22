@@ -24,6 +24,8 @@ package org.apache.commons.pipeline;
  * for subsequent stages. Each {@link StageDriver} implementation will
  * ordinarily provide a custom Feeder implementation that integrates receiving
  * objects with its internal stage processing workflow.
+ *
+ *
  */
 public interface Feeder {
     /**

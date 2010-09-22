@@ -19,9 +19,9 @@ package org.apache.commons.pipeline.stage;
 
 import java.util.ArrayList;
 import java.util.List;
-import junit.framework.*;
-import org.apache.commons.pipeline.testFramework.TestFeeder;
-import org.apache.commons.pipeline.testFramework.TestStageContext;
+
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
 /**
  * Test cases for AddToCollectionStage

@@ -15,20 +15,16 @@
  * limitations under the License.
  */
 
-package org.apache.commons.pipeline.testFramework;
 
-import java.util.ArrayList;
-import java.util.List;
+package org.apache.commons.pipeline.driver.control;
 
-import org.apache.commons.pipeline.Feeder;
+import org.apache.commons.pipeline.*;
 
 /**
- * This feeder simply adds the received objects to a list.
+ *
  */
-public class TestFeeder implements Feeder {
-    public List<Object> receivedValues = new ArrayList<Object>();
-
-    public void feed(Object obj) {
-        this.receivedValues.add(obj);
-    }
+public interface PrioritizableStageDriver extends StageDriver{
+    public void increasePriority(double amount);
+    public void decreasePriority(double amount);
+    public double getPriority();
 }

@@ -15,35 +15,36 @@
  * limitations under the License.
  */
 
-package org.apache.commons.pipeline.testFramework;
+package org.apache.commons.pipeline.driver.control;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.pipeline.StageException;
-import org.apache.commons.pipeline.validation.ConsumedTypes;
-import org.apache.commons.pipeline.validation.ProducesConsumed;
+import org.apache.commons.pipeline.testFramework.TestStage;
 
-/**
- * This stage will generate {@link StageException}s for every other object this
- * stage processes. By design, the even numbered objects will cause a <CODE>StageException</CODE>
- * to be thrown (counting the first object as 1).
- */
-@ConsumedTypes(Object.class)
-@ProducesConsumed
-public class FaultingTestStage extends TestStage {
-    private Log log = LogFactory.getLog(FaultingTestStage.class);
-    private int counter = 0;
+
+class IOBoundTestStage extends TestStage {
+    private Log log = LogFactory.getLog(IOBoundTestStage.class);
+    private long consume;
+    private long sleeptime;
     
-    public FaultingTestStage(int index) {
-        super(index);
+    public IOBoundTestStage(int id, long consume, long sleeptime) {
+        super( id );
+        this.consume = consume;
+        this.sleeptime = sleeptime;
     }
     
     public void process(Object obj) throws StageException {
-        if (++counter % 2 == 0) {
-            log.error("Planned fault in stage " + this + ".");
-            throw new StageException(this, "Planned fault in stage " + super.getIndex() + ".");
+        super.process( obj );
+        try {
+            long startTime = System.currentTimeMillis();
+            Thread.currentThread().sleep( sleeptime );
+            double total = PrioritizableStageDriverTestUtils.consumeNCubed( consume );
+            Thread.currentThread().sleep( sleeptime );
+            log.debug( "IO stage took " + (System.currentTimeMillis() - startTime) + " ms");
+        }  catch (InterruptedException ex) {
+            ex.printStackTrace();
         }
         
-        super.process(obj);
     }
 }

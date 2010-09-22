@@ -18,7 +18,6 @@
 package org.apache.commons.pipeline.driver;
 
 import org.apache.commons.pipeline.AbstractLoggingTestCase;
-import static org.apache.commons.pipeline.StageDriver.State.*;
 import org.apache.commons.pipeline.testFramework.TestFeeder;
 import org.apache.commons.pipeline.testFramework.TestStage;
 import org.apache.commons.pipeline.testFramework.TestStageContext;

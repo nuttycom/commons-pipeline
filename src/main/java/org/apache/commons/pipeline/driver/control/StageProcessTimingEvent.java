@@ -15,20 +15,25 @@
  * limitations under the License.
  */
 
-package org.apache.commons.pipeline.testFramework;
 
-import java.util.ArrayList;
-import java.util.List;
+package org.apache.commons.pipeline.driver.control;
 
-import org.apache.commons.pipeline.Feeder;
+import java.util.EventObject;
+import org.apache.commons.pipeline.Stage;
 
 /**
- * This feeder simply adds the received objects to a list.
+ *
  */
-public class TestFeeder implements Feeder {
-    public List<Object> receivedValues = new ArrayList<Object>();
-
-    public void feed(Object obj) {
-        this.receivedValues.add(obj);
+public class StageProcessTimingEvent extends EventObject {
+    private long latency;
+    
+    /** Creates a new instance of StageProcessTimingEvent */
+    public StageProcessTimingEvent(Stage source, long latency) {
+        super(source);
+        this.latency = latency;
     }
+
+    public long getLatency() {
+        return latency;
+    }    
 }

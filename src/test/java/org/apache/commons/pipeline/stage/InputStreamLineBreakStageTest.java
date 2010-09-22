@@ -18,7 +18,9 @@
 package org.apache.commons.pipeline.stage;
 
 import java.io.InputStream;
-import junit.framework.*;
+
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
 /**
  * Test cases for InputStreamLineBreakStage.

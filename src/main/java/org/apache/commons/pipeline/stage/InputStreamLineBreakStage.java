@@ -21,7 +21,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import org.apache.commons.pipeline.stage.BaseStage;
+
 import org.apache.commons.pipeline.StageException;
 
 /**

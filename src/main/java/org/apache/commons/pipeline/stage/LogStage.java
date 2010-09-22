@@ -17,11 +17,9 @@
 
 package org.apache.commons.pipeline.stage;
 
-import org.apache.commons.pipeline.StageException;
-import org.apache.commons.pipeline.stage.BaseStage;
-import java.util.Queue;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.commons.pipeline.StageException;
 
 
 /**

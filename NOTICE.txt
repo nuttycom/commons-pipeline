@@ -1,4 +1,4 @@
-Apache Commons Pipeline
+Apache Jakarta Commons Pipeline
 Copyright 2004-2006 The Apache Software Foundation
 
 This product includes software developed by

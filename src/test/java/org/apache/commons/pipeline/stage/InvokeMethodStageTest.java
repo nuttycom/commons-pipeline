@@ -18,9 +18,10 @@
 
 package org.apache.commons.pipeline.stage;
 
-import junit.framework.*;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
+
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
 /**
  *

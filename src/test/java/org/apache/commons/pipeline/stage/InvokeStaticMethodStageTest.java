@@ -18,10 +18,9 @@
 package org.apache.commons.pipeline.stage;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import junit.framework.*;
-import org.apache.commons.pipeline.Pipeline;
-import org.apache.commons.pipeline.driver.SynchronousStageDriver;
+
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
 
 /**

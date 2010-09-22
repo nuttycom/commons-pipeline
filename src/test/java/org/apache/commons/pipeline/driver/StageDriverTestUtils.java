@@ -18,9 +18,10 @@
 package org.apache.commons.pipeline.driver;
 
 import junit.framework.TestCase;
+
 import org.apache.commons.pipeline.StageDriver;
-import org.apache.commons.pipeline.testFramework.FaultingTestStage;
 import org.apache.commons.pipeline.StageDriverFactory;
+import org.apache.commons.pipeline.testFramework.FaultingTestStage;
 import org.apache.commons.pipeline.testFramework.TestFeeder;
 import org.apache.commons.pipeline.testFramework.TestStage;
 import org.apache.commons.pipeline.testFramework.TestStageContext;

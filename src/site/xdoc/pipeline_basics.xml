@@ -26,31 +26,29 @@ limitations under the License.
     </properties>
     <body>
         <p>
-            A tutorial on some of the Basics needed to use the Apache Commons Pipeline 
+            This tutorial covers some of the basics needed to use the Apache Commons Pipeline 
             workflow framework. The target audience for this document consists of developers
-            who will need to assemble existing stages or write their own stages. The
-            pipeline provides a Java class library intended to make it easy to use and reuse
-            stages as modular processing blocks.
+            who will need to assemble existing stages or write their own stages. 
         </p>
         <section name="Pipeline Structure">
             <p>
-            <b>Stages</b> in a pipeline represent the logical the steps needed
-            to process data. Each represents a single high level processing
-            concept such as finding files, reading a file format, computing a
-            product from the data, or writing data to a database. The primary
-            advantage of using the Pipeline framework and building the
-            processing steps into stages is the reusablility of the stages in 
-            other pipelines.
+            <b>Stages</b> in a pipeline represent logical units of work in 
+            a data processing workflow. Each stage implements a single high level 
+            processing concept such as finding files, reading a file format, computing a
+            product from the data, or writing data to a database. Commons-pipeline
+            is built from the ground up with parallel processing in mind, so stages
+            are intended to run concurrently.
             </p>
             <p>
                 <img src="images/BasicPipeline.png" alt="A basic pipeline"/>
             </p>
             <p>
-                A <b>Pipeline</b> is built up from stages which can pass data on
-                to subsequent stages. The arrows above that are labelled
-                <b>&quot;EMIT&quot;</b> show the data output of one stage being
-                passed to the next stage. At the code level, there is an
-                <code>emit()</code> method that sends data to the next stage.
+                A <b>Pipeline</b> is built up from stages that act as filters which
+                process incoming data and pass results on to subsequent stages. 
+                In the diagram above, the arrows labelled <b>&quot;EMIT&quot;</b> represent 
+                the data output of one stage being passed to the next. The base class for 
+                most Stage implementations, <code>BaseStage</code> supplies a convenience method
+                <code>emit()</code> that is used to send data to the next stage in the pipeline.
                 The data flow starts at the left, where there is an arrow
                 labelled <b>&quot;FEED&quot;</b>. The FEED starts off the
                 pipeline and is usually set up by a configuration file,
@@ -125,10 +123,10 @@ limitations under the License.
                 <li> One object fed into a stage does not always 
                 produce one object out.
                 <ul>
-                    <li> Stages that do not pass on (emit)  any objecs are referred to as
-                    <b>terminal stages</b>. Avoid creating this type of stage, since they limit your
-                    possibilities when building pipelines. (This is easy to do, one line of code
-                    passes data to the next stage.) 
+                    <li> Stages that do not pass on (emit)  any objecs are
+                    referred to as <b>terminal stages</b>. These should be
+                    avoided, since they limit your possibilities when building
+                    pipelines from existing stage components. 
                     </li>
                     <li> Stages that send objects on to more than one subsequent
                     stage are called <b>branching stages</b>. 

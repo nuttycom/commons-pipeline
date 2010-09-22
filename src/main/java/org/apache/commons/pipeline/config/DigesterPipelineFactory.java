@@ -24,10 +24,11 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+
 import org.apache.commons.digester.Digester;
 import org.apache.commons.digester.RuleSet;
-import org.apache.commons.pipeline.PipelineCreationException;
 import org.apache.commons.pipeline.Pipeline;
+import org.apache.commons.pipeline.PipelineCreationException;
 import org.xml.sax.SAXException;
 
 

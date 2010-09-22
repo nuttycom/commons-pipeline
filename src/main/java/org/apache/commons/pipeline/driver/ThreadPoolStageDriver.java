@@ -142,6 +142,14 @@ public class ThreadPoolStageDriver extends AbstractStageDriver {
             startSignal.countDown();
             
             log.debug("Worker threads for stage " + stage + " started.");
+            
+            //the following appears to be superfluous, since the state was already set to running.
+//            //wait to ensure that the stage starts up correctly
+//            try {
+//                while ( !(this.currentState == RUNNING || this.currentState == ERROR) ) this.wait();
+//            } catch (InterruptedException e) {
+//                throw new StageException(this.getStage(), "Worker thread unexpectedly interrupted while waiting for thread startup.", e);
+//            }
         } else {
             throw new IllegalStateException("Attempt to start driver in state " + this.currentState);
         }
@@ -290,7 +298,7 @@ public class ThreadPoolStageDriver extends AbstractStageDriver {
                 recordFatalError(e);
                 setState(ERROR);
             } catch (InterruptedException e) {
-                log.error("Stage " + stage + " (threadID: " + threadID + ") interrupted while waiting for barrier", e);
+                log.error("Stage " + stage + " (threadID: " + threadID + ") interrupted while waiting for barrier",e);
                 recordFatalError(e);
                 setState(ERROR);
             } finally {
