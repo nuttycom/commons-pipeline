@@ -20,20 +20,6 @@ package org.apache.commons.pipeline.driver.control;
 import junit.framework.*;
 import static org.apache.commons.pipeline.StageDriver.State.*;
 import static org.apache.commons.pipeline.driver.FaultTolerance.*;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.RejectedExecutionHandler;
-import java.util.concurrent.ThreadPoolExecutor;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.commons.pipeline.Feeder;
-import org.apache.commons.pipeline.Stage;
-import org.apache.commons.pipeline.StageContext;
-import org.apache.commons.pipeline.StageDriver;
-import org.apache.commons.pipeline.StageException;
-import org.apache.commons.pipeline.driver.FaultTolerance;
 
 public class WallClockThresholdDriverControlStrategyTest extends TestCase {
     
@@ -55,7 +41,7 @@ public class WallClockThresholdDriverControlStrategyTest extends TestCase {
 
     public void testCPUBoundControl() throws Exception
     {
-        System.out.println( "WallClock: testCPUBoundControl");
+        //System.out.println( "WallClock: testCPUBoundControl");
         CountingDriverController controller = new CountingDriverController();
         controller.setMinimumEventsToHandle( 10 );
         controller.setDriverControlStrategy( new WallClockThresholdDriverControlStrategy() );
@@ -67,7 +53,7 @@ public class WallClockThresholdDriverControlStrategyTest extends TestCase {
     
     public void testIOBoundControl() throws Exception
     {
-        System.out.println( "WallClock: testIOBoundControl");
+        //System.out.println( "WallClock: testIOBoundControl");
         CountingDriverController controller = new CountingDriverController();
         controller.setMinimumEventsToHandle( 10 );
         controller.setDriverControlStrategy( new WallClockThresholdDriverControlStrategy() );

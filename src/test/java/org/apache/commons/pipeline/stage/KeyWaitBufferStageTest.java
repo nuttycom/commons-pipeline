@@ -49,7 +49,7 @@ public class KeyWaitBufferStageTest extends AbstractStageTest {
      * data waiting for notify() to be called with an appropriate event.
      */
     public void testProcessAndNotify() throws Exception {
-        System.out.println("notify");
+        //System.out.println("processAndNotify");
         
         String obj = "Hello, World!";
         KeyFactory<Object,Integer> keyFactory = new KeyFactory.HashKeyFactory();
