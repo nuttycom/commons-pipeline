@@ -36,8 +36,8 @@ limitations under the License.
     <developer>
       <id>kjn</id>
       <name>Kris Nuttycombe</name>
-      <email>kris.nuttycombe@noaa.gov</email>
-      <organization>National Geophysical Data Center</organization>
+      <email>kris@hylotech.com</email>
+      <organization>HyloTech</organization>
       <timezone>-7</timezone>
     </developer>
   </developers>
