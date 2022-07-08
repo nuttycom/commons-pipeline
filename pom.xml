@@ -97,7 +97,7 @@ limitations under the License.
     <repository>
       <id>apache.snapshots</id>
       <name>Snapshot Repository</name>
-      <url>http://people.apache.org/maven-snapshot-repository/</url>
+      <url>https://people.apache.org/maven-snapshot-repository/</url>
     </repository>
   </repositories>
   <dependencies>
